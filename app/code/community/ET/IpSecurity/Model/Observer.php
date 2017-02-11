@@ -670,6 +670,7 @@ class ET_IpSecurity_Model_Observer
      */
     protected function _convertIpToComparableString($ip)
     {
+        if($ip == '::1'){$ip='127.0.0.1';}
         $partsOfIp = explode(".", trim($ip));
         if (count($partsOfIp) != 4) {
             throw new Exception("Incorrect IP format: " . $ip);

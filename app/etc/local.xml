@@ -41,9 +41,9 @@
             <default_setup>
                 <connection>
                     <host><![CDATA[localhost]]></host>
-                    <username><![CDATA[leadtwop_lead2p]]></username>
-                    <password><![CDATA[s[het}VP&2Ou]]></password>
-                    <dbname><![CDATA[leadtwop_lead2pass]]></dbname>
+                    <username><![CDATA[root]]></username>
+                    <password><![CDATA[123]]></password>
+                    <dbname><![CDATA[wl_local_lead2pass]]></dbname>
                     <active>1</active>
                 </connection>
             </default_setup>
