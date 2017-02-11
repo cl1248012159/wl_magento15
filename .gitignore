@@ -22,3 +22,5 @@ robots.txt
 sitemap.xml
 tool
 var
+
+.DS_Store
