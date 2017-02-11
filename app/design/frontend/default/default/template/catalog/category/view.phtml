@@ -1,0 +1,149 @@
+<?php
+/**
+ * Magento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE_AFL.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade Magento to newer
+ * versions in the future. If you wish to customize Magento for your
+ * needs please refer to http://www.magentocommerce.com for more information.
+ *
+ * @category    design
+ * @package     base_default
+ * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */
+?>
+<?php
+/**
+ * Category view template
+ *
+ * @see Mage_Catalog_Block_Category_View
+ */
+?>
+<?php
+    $_helper    = $this->helper('catalog/output');
+    $_category  = $this->getCurrentCategory();
+    $_imgHtml   = '';
+    if ($_imgUrl = $_category->getImageUrl()) {
+        $_imgHtml = '<p class="category-image"><img src="'.$_imgUrl.'" alt="'.$this->htmlEscape($_category->getName()).'" title="'.$this->htmlEscape($_category->getName()).'" /></p>';
+        $_imgHtml = $_helper->categoryAttribute($_category, $_imgHtml, 'image');
+    }
+?>
+<div class="category-title">
+    <?php if($this->IsRssCatalogEnable() && $this->IsTopCategory()): ?>
+        <a href="<?php echo $this->getRssLink() ?>" class="link-rss"><?php echo $this->__('Subscribe to RSS Feed') ?></a>
+    <?php endif; ?>
+    <h1><?php echo $_helper->categoryAttribute($_category, $_category->getName(), 'name') ?></h1>
+</div>
+
+<?php echo $this->getMessagesBlock()->getGroupedHtml() ?>
+
+<?php if($_imgUrl): ?>
+    <?php echo $_imgHtml ?>
+<?php endif; ?>
+
+<div class="category_top">	
+    <div class="category-description">
+	<?php if($_category->getLevel()==2){
+	?>
+	<?php echo $_category->getName();?> Certification is a popular certification among those students who want to pursue their careers in this field. Most candidates want to pass <?php echo $_category->getName();?> exam but couldn't find the best way to prepare it. Fortunately, Lead2Pass provides you with the most reliable practice exams to master it. Our <?php echo $_category->getName();?> Questions and Answers are certified by the senior lecturer and experienced technical experts in the <?php echo $_category->getName();?> field. These test questions provide you with the experience of taking the actual test. Besides, all of our products are updated timely, certified and most accurate. We guarantee that with our qualified and reliable study materials you can easily pass any <?php echo $_category->getName();?> Certification Exams.
+	<?php
+	}
+	if($_category->getLevel()==3){
+	?>
+	It is known that the <?php echo $_category->getParentCategory()->getName();?> <?php echo $_category->getName();?> Certification has become a global standard for many successful IT companies. Lead2Pass.com is the leader in providing certification candidates with current and up-to-date training materials for <?php echo $_category->getName();?> Certification. Our IT experts have developed <?php echo $_category->getName();?> learning materials, which are completely designed for the examination, with high-quality and high accuracy. They can almost cover all the contents of your exam and will be your study guide. We promise that you can pass the <?php echo $_category->getName();?> Certification exam on the first try after using our products, or else give you a FULL REFUND to reduce your loss. Your satisfaction is our great concern.
+	<?php
+	}
+	?>        
+    </div>
+    
+	
+	
+	<?php $categories = $this->getCurrentCategory()->getChildrenCategories();?>		
+		<?php if($categories): ?>
+		<ul class="child_category">
+			<?php foreach ($categories as $category_one): ?>
+                    <?php if($category_one->getIsActive()): ?>
+                    <li>
+                        <a href="<?php echo $category_one->getUrl() ?>">
+							<?php echo $this->htmlEscape($category_one->getName()) ?>
+						</a>
+                    </li>
+                    <?php endif; ?>
+           <?php endforeach ?>
+		</ul>
+	<?php endif; ?>
+</div>
+
+
+	
+	
+	
+
+<?php if($this->isContentMode()): ?>
+    <?php echo $this->getCmsBlockHtml() ?>
+
+<?php elseif($this->isMixedMode()): ?>
+    <?php echo $this->getCmsBlockHtml() ?>
+    <?php echo $this->getProductListHtml() ?>
+
+<?php else: ?>
+    <?php echo $this->getProductListHtml() ?>
+<?php endif; ?>
+
+
+
+<div class="category_top">	
+    <div class="category-description">
+	<?php if($_category->getLevel()==2){
+	?>
+<p  class="product_static"><?php echo $_category->getName();?> Certification Features</p>
+
+<p><?php echo $_category->getName();?>, which always enjoy a good fame, has professional certifications for <?php echo $_category->getName();?> products. The best <?php echo $_category->getName();?> Certification exams bring valuable, measurable rewards to network professionals, their managers and the organizations that employ them. If you want to consolidate your position, <?php echo $_category->getName();?> Certification is one of your essential charm. And if you want to master the <?php echo $_category->getName();?> braindumps easily, Lead2Pass can help you.</p>
+
+<p  class="product_static">Benefits of Getting <?php echo $_category->getName();?> Certification</p>
+
+<p>Nowadays, professionals certified by <?php echo $_category->getName();?> are preferred by the employers and they also get preference in the promotions. Because obtaining <?php echo $_category->getName();?> Certificate can not only prove your technical skills, but can be the knocking brick as well when finding a job . It is also a shortcut to raise your social status since more and more companies pay much attention to it. Therefore, if you can pass all the exams of Cisco <?php echo $_category->getName();?> after using Lead2Pass Cisco <?php echo $_category->getName();?> learning materials, you will get a brighter future on your <?php echo $_category->getName();?> career path.</p>
+
+<p class="product_static">Well Certified</p>
+
+<p>All of Lead2Pass <?php echo $_category->getName();?>study guides are certified by the senior lecturer and experienced technical experts in the <?php echo $_category->getName();?> field. Our <?php echo $_category->getName();?> experts devote themselves to developing <?php echo $_category->getName();?> practice tests of high quality, which is completely designed for the examination and it can completely cover all the contents of the exam. You don't need other <?php echo $_category->getName();?> books or attend expensive training classes to supplement your knowledge.</p>
+
+<p class="product_static">Good Feedbacks</p>
+
+<p>Lead2Pass.com, whose positive rating is very high, always experience a good reputation among customers. Our <?php echo $_category->getName();?> training materials are good value for money. They are not only comprehensive but updated timely as well in line with the latest <?php echo $_category->getName();?> Exam objectives and give you 100% success in passing <?php echo $_category->getName();?> Certification exam. Customers are not only satisfied with our products but with our after-sale services as well. Lead2Pass offers the best after-sale service to meet the different needs from our customers.</p>
+	<?php
+	}
+	if($_category->getLevel()==3){
+	?>
+<p  class="product_static">The Products - Condensed while Comprehensive</p>
+
+<p>Lead2Pass <?php echo $_category->getName();?> Certification study guides are condensed by IT professionals. Lots of students have been complaining that there are too many questions and answers in so many practice exams and study guides, and they are just too tired to afford any more. Seeing this, Lead2Pass experts work out this condensed version while still guarantee that all the knowledge is covered after deep research and analysis. Everything is to make convenience for candidates on their road to certificates!</p>
+
+<p  class="product_static">The Service - Instant and Convenient</p>
+
+<p>Lead2Pass provides 24*7 customers service: pre-sale and after-sale. The live-chat Lead2Pass supplies make sure that candidates can get instant help when shopping online. The online chat, online payment, and online download ensure so high convenience that customers are able to complete a transaction within half hours.</p>
+
+<p  class="product_static">Pre-sale - Free Demo Trial</p>
+
+<p>Before you buy the <?php echo $_category->getName();?> exam, you may try this free <?php echo $_category->getName();?> braindumps demo. It is a demo of Lead2Pass.com <?php echo $_category->getName();?> braindumps  which will show you how it looks and works.This trial version is absolutely free and easy to download.</p>
+
+<p  class="product_static">After-sale - Pass Guarantee and Refunding</p> 
+
+<p>Lead2Pass.com <?php echo $_category->getName();?> braindumps is surely a passport to success in <?php echo $_category->getName();?> exam testing. We guarantee that you will pass, and with a high score. If, however, you still worry that you may fail, don’t worry then. Lead2Pass.com will return your money back 100%. This is absolutely a risk free online shopping.</p>
+	<?php
+	}
+	?>        
+    </div>
+</div>
