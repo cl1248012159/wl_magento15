@@ -26,6 +26,7 @@
 
 /** @var $installer Mage_Catalog_Model_Resource_Setup */
 $installer  = $this;
+$installer->run('SET FOREIGN_KEY_CHECKS=0;');
 $connection = $installer->getConnection();
 
 /**
@@ -212,3 +213,4 @@ foreach ($priceIndexerTables as $table) {
         'comment'   => 'Group price',
     ));
 }
+$installer->run('SET FOREIGN_KEY_CHECKS=1;');
