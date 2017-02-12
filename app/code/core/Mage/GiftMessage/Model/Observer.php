@@ -10,18 +10,18 @@
  * http://opensource.org/licenses/osl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Mage
  * @package     Mage_GiftMessage
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 
@@ -45,8 +45,15 @@ class Mage_GiftMessage_Model_Observer extends Varien_Object
     {
         $orderItem = $observer->getEvent()->getOrderItem();
         $quoteItem = $observer->getEvent()->getItem();
+
+        $isAvailable = Mage::helper('giftmessage/message')->getIsMessagesAvailable(
+            'item',
+            $quoteItem,
+            $quoteItem->getStoreId()
+        );
+
         $orderItem->setGiftMessageId($quoteItem->getGiftMessageId())
-            ->setGiftMessageAvailable($this->_getAvailable($quoteItem->getProduct()));
+            ->setGiftMessageAvailable($isAvailable);
         return $this;
     }
 
@@ -81,6 +88,7 @@ class Mage_GiftMessage_Model_Observer extends Varien_Object
     /**
      * Geter for available gift messages value from product
      *
+     * @deprecated after 1.5.0.0
      * @param Mage_Catalog_Model_Product|integer $product
      * @return integer|null
      */
@@ -215,7 +223,12 @@ class Mage_GiftMessage_Model_Observer extends Varien_Object
             return $this;
         }
 
-        if (!Mage::helper('giftmessage/message')->isMessagesAvailable('order_item', $orderItem, $orderItem->getStoreId())){
+        $isAvailable = Mage::helper('giftmessage/message')->isMessagesAvailable(
+            'order_item',
+            $orderItem,
+            $orderItem->getStoreId()
+        );
+        if (!$isAvailable) {
             return $this;
         }
 

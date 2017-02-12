@@ -9,21 +9,21 @@
  * http://opensource.org/licenses/afl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Mage
  * @package     Mage_Adminhtml
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 function setLocation(url){
-    window.location.href = url;
+    window.location.href = encodeURI(url);
 }
 
 function confirmSetLocation(message, url){
@@ -94,10 +94,28 @@ function imagePreview(element){
         win.document.close();
         Event.observe(win, 'load', function(){
             var img = win.document.getElementById('image_preview');
-            win.resizeTo(img.width+40, img.height+80)
+            win.resizeTo(img.width+40, img.height+80);
         });
     }
 }
+
+function checkByProductPriceType(elem) {
+    if (elem.id == 'price_type') {
+        this.productPriceType = elem.value;
+        return false;
+    } else {
+        if (elem.id == 'price' && this.productPriceType == 0) {
+            return false;
+        }
+        return true;
+    }
+}
+
+Event.observe(window, 'load', function() {
+    if ($('price_default') && $('price_default').checked) {
+        $('price').disabled = 'disabled';
+    }
+});
 
 function toggleValueElements(checkbox, container, excludedElements, checked){
     if(container && checkbox){
@@ -114,26 +132,24 @@ function toggleValueElements(checkbox, container, excludedElements, checked){
         var elems = Element.select(container, ['select', 'input', 'textarea', 'button', 'img']);
         var isDisabled = (checked != undefined ? checked : checkbox.checked);
         elems.each(function (elem) {
-            var isIgnored = false;
-            for (var i = 0; i < ignoredElements.length; i++) {
-                if (elem == ignoredElements[i]) {
-                    isIgnored = true;
-                    break;
+            if (checkByProductPriceType(elem)) {
+                var i = ignoredElements.length;
+                while (i-- && elem != ignoredElements[i]);
+                if (i != -1) {
+                    return;
+                }
+
+                elem.disabled = isDisabled;
+                if (isDisabled) {
+                    elem.addClassName('disabled');
+                } else {
+                    elem.removeClassName('disabled');
+                }
+                if (elem.nodeName.toLowerCase() == 'img') {
+                    isDisabled ? elem.hide() : elem.show();
                 }
             }
-            if (isIgnored) {
-                return;
-            }
-            elem.disabled=isDisabled;
-            if (isDisabled) {
-                elem.addClassName('disabled');
-            } else {
-                elem.removeClassName('disabled');
-            }
-            if(elem.tagName == 'IMG') {
-                isDisabled ? elem.hide() : elem.show();
-            }
-        })
+        });
     }
 }
 
@@ -151,7 +167,7 @@ function submitAndReloadArea(area, url) {
             onSuccess: function(transport) {
                 try {
                     if (transport.responseText.isJSON()) {
-                        var response = transport.responseText.evalJSON()
+                        var response = transport.responseText.evalJSON();
                         if (response.error) {
                             alert(response.message);
                         }
@@ -188,7 +204,7 @@ Event.observe(window, 'load', function() {
 });
 */
 function syncOnchangeValue(baseElem, distElem){
-    var compare = {baseElem:baseElem, distElem:distElem}
+    var compare = {baseElem:baseElem, distElem:distElem};
     Event.observe(baseElem, 'change', function(){
         if($(this.baseElem) && $(this.distElem)){
             $(this.distElem).value = $(this.baseElem).value;
@@ -295,7 +311,7 @@ var toolbarToggle = {
         // Create copy of header, that will serve as floating toolbar docked to top of window
         this.headerCopy = $(document.createElement('div'));
         this.headerCopy.appendChild(this.header.cloneNode(true));
-        document.body.insertBefore(this.headerCopy, document.body.lastChild)
+        document.body.insertBefore(this.headerCopy, document.body.lastChild);
         this.headerCopy.addClassName('content-header-floating');
 
         // Remove duplicated buttons and their container
@@ -346,7 +362,11 @@ var toolbarToggle = {
         var buttons = $$('.content-buttons')[0];
         if (buttons && buttons.oldParent && buttons.oldParent != buttons.parentNode) {
             buttons.remove();
-            buttons.oldParent.insertBefore(buttons, buttons.oldBefore);
+            if(buttons.oldBefore) {
+                buttons.oldParent.insertBefore(buttons, buttons.oldBefore);
+            } else {
+                buttons.oldParent.appendChild(buttons);
+            }
         }
 
         this.headerCopy.style.display = 'none';
@@ -373,7 +393,7 @@ var toolbarToggle = {
             if (buttons.oldParent == buttons.parentNode) {
                 // Make static dimensions for placeholder, so it's not collapsed when buttons are removed
                 if (buttons.placeholder) {
-                    var dimensions = buttons.placeholder.getDimensions()
+                    var dimensions = buttons.placeholder.getDimensions();
                     buttons.placeholder.style.width = dimensions.width + 'px';
                     buttons.placeholder.style.height = dimensions.height + 'px';
                 }
@@ -456,7 +476,7 @@ var toolbarToggle = {
 
         this.eventsAdded = false;
     }
-}
+};
 
 // Deprecated since 1.4.2.0-beta1 - use toolbarToggle.reset() instead
 function updateTopButtonToolbarToggle()
@@ -529,9 +549,15 @@ var Fieldset = {
         }
         if (collapsed==1 || collapsed===undefined) {
            $(containerId + '-head').removeClassName('open');
+           if($(containerId + '-head').up('.section-config')) {
+                $(containerId + '-head').up('.section-config').removeClassName('active');
+           }
            $(containerId).hide();
         } else {
            $(containerId + '-head').addClassName('open');
+           if($(containerId + '-head').up('.section-config')) {
+                $(containerId + '-head').up('.section-config').addClassName('active');
+           }
            $(containerId).show();
         }
     },

@@ -10,17 +10,17 @@
  * http://opensource.org/licenses/osl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
- * @category   Varien
- * @package    Varien_Data
- * @copyright  Copyright (c) 2008 Irubin Consulting Inc. DBA Varien (http://www.varien.com)
+ * @category    Varien
+ * @package     Varien_Data
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -54,10 +54,11 @@ class Varien_Data_Form_Element_Multiselect extends Varien_Data_Form_Element_Abst
     {
         $this->addClass('select multiselect');
         $html = '';
-        if ($this->getCanBeEmpty()) {
+        if ($this->getCanBeEmpty() && empty($this->_data['disabled'])) {
             $html .= '<input type="hidden" name="' . parent::getName() . '" value="" />';
         }
-        $html .= '<select id="'.$this->getHtmlId().'" name="'.$this->getName().'" '.$this->serialize($this->getHtmlAttributes()).' multiple="multiple">'."\n";
+        $html .= '<select id="' . $this->getHtmlId() . '" name="' . $this->getName() . '" ' .
+            $this->serialize($this->getHtmlAttributes()) . ' multiple="multiple">' . "\n";
 
         $value = $this->getValue();
         if (!is_array($value)) {
@@ -67,20 +68,21 @@ class Varien_Data_Form_Element_Multiselect extends Varien_Data_Form_Element_Abst
         if ($values = $this->getValues()) {
             foreach ($values as $option) {
                 if (is_array($option['value'])) {
-                    $html.='<optgroup label="'.$option['label'].'">'."\n";
+                    $html .= '<optgroup label="' . $option['label'] . '">' . "\n";
                     foreach ($option['value'] as $groupItem) {
-                        $html.= $this->_optionToHtml($groupItem, $value);
+                        $html .= $this->_optionToHtml($groupItem, $value);
                     }
-                    $html.='</optgroup>'."\n";
+                    $html .= '</optgroup>' . "\n";
                 }
                 else {
-                    $html.= $this->_optionToHtml($option, $value);
+                    $html .= $this->_optionToHtml($option, $value);
                 }
             }
         }
 
-        $html.= '</select>'."\n";
-        $html.= $this->getAfterElementHtml();
+        $html .= '</select>' . "\n";
+        $html .= $this->getAfterElementHtml();
+
         return $html;
     }
 
@@ -97,8 +99,10 @@ class Varien_Data_Form_Element_Multiselect extends Varien_Data_Form_Element_Abst
 
 
         if($this->getSelectAll() && $this->getDeselectAll()) {
-            $result.= '<a href="#" onclick="return ' . $this->getJsObjectName() . '.selectAll()">' . $this->getSelectAll() . '</a> <span class="separator">&nbsp;|&nbsp;</span>';
-            $result.= '<a href="#" onclick="return ' . $this->getJsObjectName() . '.deselectAll()">' . $this->getDeselectAll() . '</a>';
+            $result .= '<a href="#" onclick="return ' . $this->getJsObjectName() . '.selectAll()">' .
+                $this->getSelectAll() . '</a> <span class="separator">&nbsp;|&nbsp;</span>';
+            $result .= '<a href="#" onclick="return ' . $this->getJsObjectName() . '.deselectAll()">' .
+                $this->getDeselectAll() . '</a>';
         }
 
         $result.= ( $this->getNoSpan() === true ) ? '' : '</span>'."\n";
@@ -121,7 +125,7 @@ class Varien_Data_Form_Element_Multiselect extends Varien_Data_Form_Element_Abst
         $result.= '         return false; ' . "\n";
         $result.= '     }' . "\n";
         $result.= '  }' . "\n";
-        $result.= "\n</script>";
+        $result.= "\n" . '</script>';
 
         return $result;
     }

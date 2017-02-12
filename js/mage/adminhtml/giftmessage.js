@@ -9,17 +9,17 @@
  * http://opensource.org/licenses/afl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Mage
  * @package     Mage_Adminhtml
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -66,10 +66,6 @@ var giftMessagesController = {
             $(container).down('.action-link').addClassName('open');
             $(container).down('.default-text').hide();
             $(container).down('.close-text').show();
-            this.toogleRequired(this.getFieldId(container, 'message'), [
-                this.getFieldId(container, 'sender'),
-                this.getFieldId(container, 'recipient')
-            ]);
         } else {
             $(container).toogleGiftMessage = false;
             $(this.getFieldId(container, 'message')).formObj = $(this.getFieldId(container, 'form'));
@@ -106,11 +102,6 @@ var giftMessagesController = {
         return false;
     },
     saveGiftMessage: function(container) {
-        this.toogleRequired(this.getFieldId(container, 'message'), [
-            this.getFieldId(container, 'sender'),
-            this.getFieldId(container, 'recipient')
-        ]);
-
         $(this.getFieldId(container, 'message')).formObj = $(this.getFieldId(container, 'form'));
 
         if(!$(this.getFieldId(container, 'form')).validator) {
@@ -226,7 +217,7 @@ GiftOptionsPopup.prototype = {
         this.giftOptionsWindowMask.style.display = 'none';
         this.giftOptionsWindow.style.display = 'none';
     }
-}
+};
 
 
 /********************* GIFT OPTIONS SET ***********************/
@@ -250,7 +241,7 @@ GiftMessageSet.prototype = {
         if ($('gift-message-form-data-' + this.id)) {
             this.fields.each(function(el) {
                 if ($(this.sourcePrefix + this.id + '_' + el) && $(this.destPrefix + el)) {
-                    $(this.destPrefix + el).value = $(this.sourcePrefix + this.id + '_' + el).value
+                    $(this.destPrefix + el).value = $(this.sourcePrefix + this.id + '_' + el).value;
                 }
             }, this);
             $('gift_options_giftmessage').show();
@@ -277,4 +268,4 @@ GiftMessageSet.prototype = {
             order.loadArea(['items'], true, data.toObject());
         }
     }
-}
+};

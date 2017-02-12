@@ -10,29 +10,29 @@
  * http://opensource.org/licenses/osl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Mage
  * @package     Mage_Adminhtml
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
  * Catalog composite product configuration controller
  *
- * @category   Mage
- * @package    Mage_Adminhtml
+ * @category    Mage
+ * @package     Mage_Adminhtml
  * @author      Magento Core Team <core@magentocommerce.com>
  */
-
-class Mage_Adminhtml_Customer_Wishlist_Product_Composite_WishlistController extends Mage_Adminhtml_Controller_Action
+class Mage_Adminhtml_Customer_Wishlist_Product_Composite_WishlistController
+    extends Mage_Adminhtml_Controller_Action
 {
      /**
      * Wishlist we're working with
@@ -48,7 +48,7 @@ class Mage_Adminhtml_Customer_Wishlist_Product_Composite_WishlistController exte
      */
     protected $_wishlistItem = null;
 
-    /*
+    /**
      * Loads wishlist and wishlist item
      *
      * @return Mage_Adminhtml_Customer_Wishlist_Product_Composite_WishlistController
@@ -76,7 +76,7 @@ class Mage_Adminhtml_Customer_Wishlist_Product_Composite_WishlistController exte
         return $this;
     }
 
-    /*
+    /**
      * Ajax handler to response configuration fieldset of composite product in customer's wishlist
      *
      * @return Mage_Adminhtml_Customer_Wishlist_Product_Composite_WishlistController
@@ -100,12 +100,13 @@ class Mage_Adminhtml_Customer_Wishlist_Product_Composite_WishlistController exte
 
         /* @var $helper Mage_Adminhtml_Helper_Catalog_Product_Composite */
         $helper = Mage::helper('adminhtml/catalog_product_composite');
+        Mage::helper('catalog/product')->setSkipSaleableCheck(true);
         $helper->renderConfigureResult($this, $configureResult);
 
         return $this;
     }
 
-    /*
+    /**
      * IFrame handler for submitted configuration for wishlist item
      *
      * @return false
@@ -118,11 +119,9 @@ class Mage_Adminhtml_Customer_Wishlist_Product_Composite_WishlistController exte
             $this->_initData();
 
             $buyRequest = new Varien_Object($this->getRequest()->getParams());
-            $qty = $buyRequest->getQty() ? $buyRequest->getQty() : 0;
 
             $this->_wishlist
                 ->updateItem($this->_wishlistItem->getId(), $buyRequest)
-                ->setQty($qty)
                 ->save();
 
             $updateResult->setOk(true);
@@ -135,5 +134,15 @@ class Mage_Adminhtml_Customer_Wishlist_Product_Composite_WishlistController exte
         $this->_redirect('*/catalog_product/showUpdateResult');
 
         return false;
+    }
+
+    /**
+     * Check the permission to Manage Customers
+     *
+     * @return bool
+     */
+    protected function _isAllowed()
+    {
+        return Mage::getSingleton('admin/session')->isAllowed('customer/manage');
     }
 }

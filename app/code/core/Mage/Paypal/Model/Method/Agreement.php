@@ -10,18 +10,18 @@
  * http://opensource.org/licenses/osl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Mage
  * @package     Mage_Paypal
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
@@ -295,16 +295,21 @@ class Mage_Paypal_Model_Method_Agreement extends Mage_Sales_Model_Payment_Method
     {
         $order = $payment->getOrder();
         $billingAgreement = Mage::getModel('sales/billing_agreement')->load(
-            $payment->getAdditionalInformation(Mage_Sales_Model_Payment_Method_Billing_AgreementAbstract::TRANSPORT_BILLING_AGREEMENT_ID)
+            $payment->getAdditionalInformation(
+                Mage_Sales_Model_Payment_Method_Billing_AgreementAbstract::TRANSPORT_BILLING_AGREEMENT_ID
+            )
         );
 
+        $proConfig = $this->_pro->getConfig();
         $api = $this->_pro->getApi()
             ->setReferenceId($billingAgreement->getReferenceId())
-            ->setPaymentAction($this->_pro->getConfig()->paymentAction)
+            ->setPaymentAction($proConfig->paymentAction)
             ->setAmount($amount)
+            ->setCurrencyCode($payment->getOrder()->getBaseCurrencyCode())
             ->setNotifyUrl(Mage::getUrl('paypal/ipn/'))
             ->setPaypalCart(Mage::getModel('paypal/cart', array($order)))
-            ->setIsLineItemsEnabled($this->_pro->getConfig()->lineItemsEnabled)
+            ->setIsLineItemsEnabled($proConfig->lineItemsEnabled)
+            ->setInvNum($order->getIncrementId())
         ;
 
         // call api and import transaction and other payment information
@@ -319,7 +324,7 @@ class Mage_Paypal_Model_Method_Agreement extends Mage_Sales_Model_Payment_Method
         if ($api->getBillingAgreementId()) {
             $order->addRelatedObject($billingAgreement);
             $billingAgreement->setIsObjectChanged(true);
-            $billingAgreement->addOrderRelation($order->getId());
+            $billingAgreement->addOrderRelation($order);
         }
 
         return $this;

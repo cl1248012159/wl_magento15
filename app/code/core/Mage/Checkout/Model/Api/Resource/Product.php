@@ -10,22 +10,22 @@
  * http://opensource.org/licenses/osl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Mage
  * @package     Mage_Checkout
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
- * ${CLASS_DESCRIPTION}
+ * API Resource class for product
  */
 class Mage_Checkout_Model_Api_Resource_Product extends Mage_Checkout_Model_Api_Resource
 {
@@ -41,31 +41,15 @@ class Mage_Checkout_Model_Api_Resource_Product extends Mage_Checkout_Model_Api_R
      *
      * @param  int|string $productId (SKU or ID)
      * @param  int|string $store
+     * @param  string $identifierType
      * @return Mage_Catalog_Model_Product
      */
     protected function _getProduct($productId, $store = null, $identifierType = null)
     {
-        $loadByIdOnFalse = false;
-        if ($identifierType == null) {
-            $identifierType = 'sku';
-            $loadByIdOnFalse = true;
-        }
-        $product = Mage::getModel('catalog/product');
-        if ($store !== null) {
-            $product->setStoreId($this->_getStoreId($store));
-        }
-        /* @var $product Mage_Catalog_Model_Product */
-        if ($identifierType == 'sku') {
-            $idBySku = $product->getIdBySku($productId);
-            if ($idBySku) {
-                $productId = $idBySku;
-            }
-            if ($idBySku || $loadByIdOnFalse) {
-                $product->load($productId);
-            }
-        } elseif ($identifierType == 'id') {
-            $product->load($productId);
-        }
+        $product = Mage::helper('catalog/product')->getProduct($productId,
+                        $this->_getStoreId($store),
+                        $identifierType
+        );
         return $product;
     }
 
@@ -90,5 +74,55 @@ class Mage_Checkout_Model_Api_Resource_Product extends Mage_Checkout_Model_Api_R
             $request->setQty(1);
         }
         return $request;
+    }
+
+    /**
+     * Get QuoteItem by Product and request info
+     *
+     * @param Mage_Sales_Model_Quote $quote
+     * @param Mage_Catalog_Model_Product $product
+     * @param Varien_Object $requestInfo
+     * @return Mage_Sales_Model_Quote_Item
+     * @throw Mage_Core_Exception
+     */
+    protected function _getQuoteItemByProduct(Mage_Sales_Model_Quote $quote,
+                            Mage_Catalog_Model_Product $product,
+                            Varien_Object $requestInfo)
+    {
+        $cartCandidates = $product->getTypeInstance(true)
+                        ->prepareForCartAdvanced($requestInfo,
+                                $product,
+                                Mage_Catalog_Model_Product_Type_Abstract::PROCESS_MODE_FULL
+        );
+
+        /**
+         * Error message
+         */
+        if (is_string($cartCandidates)) {
+            throw Mage::throwException($cartCandidates);
+        }
+
+        /**
+         * If prepare process return one object
+         */
+        if (!is_array($cartCandidates)) {
+            $cartCandidates = array($cartCandidates);
+        }
+
+        /** @var $item Mage_Sales_Model_Quote_Item */
+        $item = null;
+        foreach ($cartCandidates as $candidate) {
+            if ($candidate->getParentProductId()) {
+                continue;
+            }
+
+            $item = $quote->getItemByProduct($candidate);
+        }
+
+        if (is_null($item)) {
+            $item = Mage::getModel("sales/quote_item");
+        }
+
+        return $item;
     }
 }

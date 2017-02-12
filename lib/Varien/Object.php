@@ -10,17 +10,17 @@
  * http://opensource.org/licenses/osl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
- * @category   Varien
- * @package    Varien_Object
- * @copyright  Copyright (c) 2008 Irubin Consulting Inc. DBA Varien (http://www.varien.com)
+ * @category    Varien
+ * @package     Varien_Object
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -77,6 +77,18 @@ class Varien_Object implements ArrayAccess
     protected $_isDeleted = false;
 
     /**
+     * Map short fields names to its full names
+     *
+     * @var array
+     */
+    protected $_oldFieldsMap = array();
+
+    /**
+     * Map of fields to sync to other fields upon changing their data
+     */
+    protected $_syncFieldsMap = array();
+
+    /**
      * Constructor
      *
      * By default is looking for first argument as array and assignes it as object attributes
@@ -85,13 +97,55 @@ class Varien_Object implements ArrayAccess
      */
     public function __construct()
     {
+        $this->_initOldFieldsMap();
+        if ($this->_oldFieldsMap) {
+            $this->_prepareSyncFieldsMap();
+        }
+
         $args = func_get_args();
         if (empty($args[0])) {
             $args[0] = array();
         }
         $this->_data = $args[0];
+        $this->_addFullNames();
 
         $this->_construct();
+    }
+
+    protected function _addFullNames()
+    {
+        $existedShortKeys = array_intersect($this->_syncFieldsMap, array_keys($this->_data));
+        if (!empty($existedShortKeys)) {
+            foreach ($existedShortKeys as $key) {
+                $fullFieldName = array_search($key, $this->_syncFieldsMap);
+                $this->_data[$fullFieldName] = $this->_data[$key];
+            }
+        }
+    }
+
+    /**
+     * Inits mapping array of object's previously used fields to new fields.
+     * Must be overloaded by descendants to set concrete fields map.
+     *
+     * @return Varien_Object
+     */
+    protected function _initOldFieldsMap()
+    {
+
+    }
+
+    /**
+     * Called after old fields are inited. Forms synchronization map to sync old fields and new fields
+     * between each other.
+     *
+     * @return Varien_Object
+     */
+    protected function _prepareSyncFieldsMap()
+    {
+        $old2New = $this->_oldFieldsMap;
+        $new2Old = array_flip($this->_oldFieldsMap);
+        $this->_syncFieldsMap = array_merge($old2New, $new2Old);
+        return $this;
     }
 
     /**
@@ -211,8 +265,13 @@ class Varien_Object implements ArrayAccess
         $this->_hasDataChanges = true;
         if(is_array($key)) {
             $this->_data = $key;
+            $this->_addFullNames();
         } else {
             $this->_data[$key] = $value;
+            if (isset($this->_syncFieldsMap[$key])) {
+                $fullFieldName = $this->_syncFieldsMap[$key];
+                $this->_data[$fullFieldName] = $value;
+            }
         }
         return $this;
     }
@@ -230,6 +289,30 @@ class Varien_Object implements ArrayAccess
         $this->_hasDataChanges = true;
         if (is_null($key)) {
             $this->_data = array();
+        } else {
+            unset($this->_data[$key]);
+            if (isset($this->_syncFieldsMap[$key])) {
+                $fullFieldName = $this->_syncFieldsMap[$key];
+                unset($this->_data[$fullFieldName]);
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * Unset old fields data from the object.
+     *
+     * $key can be a string only. Array will be ignored.
+     *
+     * @param string $key
+     * @return Varien_Object
+     */
+    public function unsetOldData($key=null)
+    {
+        if (is_null($key)) {
+            foreach ($this->_oldFieldsMap as $key => $newFieldName) {
+                unset($this->_data[$key]);
+            }
         } else {
             unset($this->_data[$key]);
         }
@@ -297,7 +380,8 @@ class Varien_Object implements ArrayAccess
                 return null;
             } elseif (is_string($value)) {
                 $arr = explode("\n", $value);
-                return (isset($arr[$index]) && (!empty($arr[$index]) || strlen($arr[$index]) > 0)) ? $arr[$index] : null;
+                return (isset($arr[$index]) && (!empty($arr[$index]) || strlen($arr[$index]) > 0))
+                    ? $arr[$index] : null;
             } elseif ($value instanceof Varien_Object) {
                 return $value->getData($index);
             }

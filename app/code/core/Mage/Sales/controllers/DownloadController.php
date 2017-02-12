@@ -10,18 +10,18 @@
  * http://opensource.org/licenses/osl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Mage
  * @package     Mage_Sales
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
@@ -48,6 +48,8 @@ class Mage_Sales_DownloadController extends Mage_Core_Controller_Front_Action
                 throw new Exception();
             }
 
+            $this->_validateFilePath($info);
+
             $filePath = Mage::getBaseDir() . $info['order_path'];
             if ((!is_file($filePath) || !is_readable($filePath)) && !$this->_processDatabaseFile($filePath)) {
                 //try get file from quote
@@ -62,6 +64,19 @@ class Mage_Sales_DownloadController extends Mage_Core_Controller_Front_Action
             ));
         } catch (Exception $e) {
             $this->_forward('noRoute');
+        }
+    }
+
+    /**
+     * @param array $info
+     * @throws Exception
+     */
+    protected function _validateFilePath($info)
+    {
+        $optionFile = Mage::getModel('catalog/product_option_type_file');
+        $optionStoragePath = $optionFile->getOrderTargetDir(true);
+        if (strpos($info['order_path'], $optionStoragePath) !== 0) {
+            throw new Exception('Unexpected file path');
         }
     }
 
@@ -113,7 +128,26 @@ class Mage_Sales_DownloadController extends Mage_Core_Controller_Front_Action
         $orderItemInfo = $recurringProfile->getData('order_item_info');
         try {
             $request = unserialize($orderItemInfo['info_buyRequest']);
-            if (!isset($request['options'][$this->getRequest()->getParam('option_id')])) {
+
+            if ($request['product'] != $orderItemInfo['product_id']) {
+                $this->_forward('noRoute');
+                return;
+            }
+
+            $optionId = $this->getRequest()->getParam('option_id');
+            if (!isset($request['options'][$optionId])) {
+                $this->_forward('noRoute');
+                return;
+            }
+            // Check if the product exists
+            $product = Mage::getModel('catalog/product')->load($request['product']);
+            if (!$product || !$product->getId()) {
+                $this->_forward('noRoute');
+                return;
+            }
+            // Try to load the option
+            $option = $product->getOptionById($optionId);
+            if (!$option || !$option->getId() || $option->getType() != 'file') {
                 $this->_forward('noRoute');
                 return;
             }
@@ -121,9 +155,6 @@ class Mage_Sales_DownloadController extends Mage_Core_Controller_Front_Action
         } catch (Exception $e) {
             $this->_forward('noRoute');
         }
-        $info = array(
-            ''
-        );
     }
 
     /**
@@ -132,16 +163,39 @@ class Mage_Sales_DownloadController extends Mage_Core_Controller_Front_Action
     public function downloadCustomOptionAction()
     {
         $quoteItemOptionId = $this->getRequest()->getParam('id');
+        /** @var $option Mage_Sales_Model_Quote_Item_Option */
         $option = Mage::getModel('sales/quote_item_option')->load($quoteItemOptionId);
 
         if (!$option->getId()) {
             $this->_forward('noRoute');
+            return;
         }
+
+        $optionId = null;
+        if (strpos($option->getCode(), Mage_Catalog_Model_Product_Type_Abstract::OPTION_PREFIX) === 0) {
+            $optionId = str_replace(Mage_Catalog_Model_Product_Type_Abstract::OPTION_PREFIX, '', $option->getCode());
+            if ((int)$optionId != $optionId) {
+                $optionId = null;
+            }
+        }
+        $productOption = null;
+        if ($optionId) {
+            /** @var $productOption Mage_Catalog_Model_Product_Option */
+            $productOption = Mage::getModel('catalog/product_option')->load($optionId);
+        }
+        if (!$productOption || !$productOption->getId()
+            || $productOption->getProductId() != $option->getProductId() || $productOption->getType() != 'file'
+        ) {
+            $this->_forward('noRoute');
+            return;
+        }
+
         try {
-            $info = unserialize($option->getValue());
+            $info = Mage::helper('core/unserializeArray')->unserialize($option->getValue());
             $this->_downloadFileAction($info);
         } catch (Exception $e) {
             $this->_forward('noRoute');
         }
+        exit(0);
     }
 }

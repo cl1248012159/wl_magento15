@@ -10,18 +10,18 @@
  * http://opensource.org/licenses/osl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Varien
  * @package     Varien_Debug
- * @copyright   Copyright (c) 2009 Irubin Consulting Inc. DBA Varien (http://www.varien.com)
- * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
@@ -33,6 +33,7 @@
  */
 class Varien_Debug
 {
+    public static $argLength = 16;
     /**
      * Magento Root path
      *
@@ -68,6 +69,20 @@ class Varien_Debug
     public static function backtrace($return = false, $html = true, $withArgs = true)
     {
         $trace  = debug_backtrace();
+        return self::trace($trace, $return, $html, $withArgs);
+    }
+
+    /**
+     * Prints or return a trace
+     *
+     * @param array $trace      trace array
+     * @param bool $return      return or print
+     * @param bool $html        output in HTML format
+     * @param bool $withArgs    add short argumets of methods
+     * @return string|bool
+     */
+    public static function trace(array $trace, $return = false, $html = true, $withArgs = true)
+    {
         $out    = '';
         if ($html) {
             $out .= '<pre>';
@@ -175,8 +190,8 @@ class Varien_Debug
         } else if (is_numeric($arg) || is_float($arg)) {
             $out .= $arg;
         } else if (is_string($arg)) {
-            if (strlen($arg) > 10) {
-                $arg = substr($arg, 0, 10) . "...";
+            if (strlen($arg) > self::$argLength) {
+                $arg = substr($arg, 0, self::$argLength) . "...";
             }
             $arg = strtr($arg, array("\t" => '\t', "\r" => '\r', "\n" => '\n', "'" => '\\\''));
             $out .= "'" . $arg . "'";

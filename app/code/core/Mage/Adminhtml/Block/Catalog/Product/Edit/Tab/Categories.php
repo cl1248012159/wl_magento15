@@ -10,18 +10,18 @@
  * http://opensource.org/licenses/osl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Mage
  * @package     Mage_Adminhtml
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
@@ -29,13 +29,16 @@
  *
  * @category   Mage
  * @package    Mage_Adminhtml
- * @author      Magento Core Team <core@magentocommerce.com>
+ * @author     Magento Core Team <core@magentocommerce.com>
  */
 class Mage_Adminhtml_Block_Catalog_Product_Edit_Tab_Categories extends Mage_Adminhtml_Block_Catalog_Category_Tree
 {
     protected $_categoryIds;
     protected $_selectedNodes = null;
 
+    /**
+     * Specify template to use
+     */
     public function __construct()
     {
         parent::__construct();
@@ -62,19 +65,33 @@ class Mage_Adminhtml_Block_Catalog_Product_Edit_Tab_Categories extends Mage_Admi
         return $this->getProduct()->getCategoriesReadonly();
     }
 
+    /**
+     * Return array with category IDs which the product is assigned to
+     *
+     * @return array
+     */
     protected function getCategoryIds()
     {
         return $this->getProduct()->getCategoryIds();
     }
 
+    /**
+     * Forms string out of getCategoryIds()
+     *
+     * @return string
+     */
     public function getIdsString()
     {
         return implode(',', $this->getCategoryIds());
     }
 
+    /**
+     * Returns root node and sets 'checked' flag (if necessary)
+     *
+     * @return Varien_Data_Tree_Node
+     */
     public function getRootNode()
     {
-//        $root = parent::getRoot();
         $root = $this->getRoot();
         if ($root && in_array($root->getId(), $this->getCategoryIds())) {
             $root->setChecked(true);
@@ -82,7 +99,14 @@ class Mage_Adminhtml_Block_Catalog_Product_Edit_Tab_Categories extends Mage_Admi
         return $root;
     }
 
-    public function getRoot($parentNodeCategory=null, $recursionLevel=3)
+    /**
+     * Returns root node
+     *
+     * @param Mage_Catalog_Model_Category|null $parentNodeCategory
+     * @param int                              $recursionLevel
+     * @return Varien_Data_Tree_Node
+     */
+    public function getRoot($parentNodeCategory = null, $recursionLevel = 3)
     {
         if (!is_null($parentNodeCategory) && $parentNodeCategory->getId()) {
             return $this->getNode($parentNodeCategory, $recursionLevel);
@@ -127,20 +151,20 @@ class Mage_Adminhtml_Block_Catalog_Product_Edit_Tab_Categories extends Mage_Admi
         return $root;
     }
 
-    protected function _getNodeJson($node, $level=1)
+    /**
+     * Returns array with configuration of current node
+     *
+     * @param Varien_Data_Tree_Node $node
+     * @param int                   $level How deep is the node in the tree
+     * @return array
+     */
+    protected function _getNodeJson($node, $level = 1)
     {
         $item = parent::_getNodeJson($node, $level);
 
-        $isParent = $this->_isParentSelectedCategory($node);
-
-        if ($isParent) {
+        if ($this->_isParentSelectedCategory($node)) {
             $item['expanded'] = true;
         }
-
-//        if ($node->getLevel() > 1 && !$isParent && isset($item['children'])) {
-//            $item['children'] = array();
-//        }
-
 
         if (in_array($node->getId(), $this->getCategoryIds())) {
             $item['checked'] = true;
@@ -149,9 +173,16 @@ class Mage_Adminhtml_Block_Catalog_Product_Edit_Tab_Categories extends Mage_Admi
         if ($this->isReadonly()) {
             $item['disabled'] = true;
         }
+
         return $item;
     }
 
+    /**
+     * Returns whether $node is a parent (not exactly direct) of a selected node
+     *
+     * @param Varien_Data_Tree_Node $node
+     * @return bool
+     */
     protected function _isParentSelectedCategory($node)
     {
         foreach ($this->_getSelectedNodes() as $selected) {
@@ -166,6 +197,11 @@ class Mage_Adminhtml_Block_Catalog_Product_Edit_Tab_Categories extends Mage_Admi
         return false;
     }
 
+    /**
+     * Returns array with nodes those are selected (contain current product)
+     *
+     * @return array
+     */
     protected function _getSelectedNodes()
     {
         if ($this->_selectedNodes === null) {
@@ -181,6 +217,12 @@ class Mage_Adminhtml_Block_Catalog_Product_Edit_Tab_Categories extends Mage_Admi
         return $this->_selectedNodes;
     }
 
+    /**
+     * Returns JSON-encoded array of category children
+     *
+     * @param int $categoryId
+     * @return string
+     */
     public function getCategoryChildrenJson($categoryId)
     {
         $category = Mage::getModel('catalog/category')->load($categoryId);
@@ -198,26 +240,39 @@ class Mage_Adminhtml_Block_Catalog_Product_Edit_Tab_Categories extends Mage_Admi
         return Mage::helper('core')->jsonEncode($children);
     }
 
-    public function getLoadTreeUrl($expanded=null)
+    /**
+     * Returns URL for loading tree
+     *
+     * @param null $expanded
+     * @return string
+     */
+    public function getLoadTreeUrl($expanded = null)
     {
-        return $this->getUrl('*/*/categoriesJson', array('_current'=>true));
+        return $this->getUrl('*/*/categoriesJson', array('_current' => true));
     }
 
     /**
      * Return distinct path ids of selected categories
      *
-     * @param int $rootId Root category Id for context
+     * @param mixed $rootId Root category Id for context
      * @return array
      */
     public function getSelectedCategoriesPathIds($rootId = false)
     {
         $ids = array();
-        $collection = Mage::getModel('catalog/category')->getCollection();
+        $categoryIds = $this->getCategoryIds();
+        if (empty($categoryIds)) {
+            return array();
+        }
+        $collection = Mage::getResourceModel('catalog/category_collection');
 
         if ($rootId) {
-            $collection->addFieldToFilter('parent_id', $rootId);
+            $collection->addFieldToFilter(array(
+                array('attribute' => 'parent_id', 'eq' => $rootId),
+                array('attribute' => 'entity_id', 'in' => $categoryIds)
+            ));
         } else {
-            $collection->addFieldToFilter('entity_id', array('in'=>$this->getCategoryIds()));
+            $collection->addFieldToFilter('entity_id', array('in' => $categoryIds));
         }
 
         foreach ($collection as $item) {
