@@ -26,6 +26,10 @@
 
 /** @var $installer Mage_Tax_Model_Resource_Setup */
 $installer = $this;
+<<<<<<< HEAD
+=======
+
+>>>>>>> dc91a25ff410e3a68f8cd382052c3561dc884047
 $installer->run('SET FOREIGN_KEY_CHECKS=0;');
 /**
  * Create table 'tax/sales_order_tax_item'
@@ -85,4 +89,8 @@ $table = $installer->getConnection()
     )
     ->setComment('Sales Order Tax Item');
 $installer->getConnection()->createTable($table);
+<<<<<<< HEAD
 $installer->run('SET FOREIGN_KEY_CHECKS=1;');
+=======
+$installer->run('SET FOREIGN_KEY_CHECKS=1;');
+>>>>>>> dc91a25ff410e3a68f8cd382052c3561dc884047

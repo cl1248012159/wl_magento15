@@ -33,7 +33,12 @@ Whoops, it looks like you have an invalid PHP version.</h3></div><p>Magento supp
  Magento using PHP-CGI as a work-around.</p></div>';
     exit;
 }
+<<<<<<< HEAD
 
+=======
+error_reporting(E_ALL | E_STRICT) ;
+ini_set('display_errors', 1) ;
+>>>>>>> dc91a25ff410e3a68f8cd382052c3561dc884047
 /**
  * Compilation includes configuration file
  */
