@@ -27,7 +27,7 @@
 
 
 <div id="mini_login_show" style="display:none;">
-	<?php echo $this->getLayout()->createBlock('cms/block')->setBlockId('mini_login')->toHtml() ?>
+    <?php echo $this->getLayout()->createBlock('customer/form_login')->setTemplate('customer/form/mini.login.phtml')->toHtml(); ?>
 </div>
 <script type="text/javascript">
 if(document.getElementById('homepage')){
@@ -37,7 +37,5 @@ if(document.getElementById('homepage')){
 }
 </script>
 
-
-<?php echo $this->getLayout()->createBlock('cms/block')->setBlockId('leftmenu')->toHtml() ?>
-
+<?php echo $this->getLayout()->createBlock('catalog/navigation')->setTemplate('catalog/navigation/top-copy.phtml')->toHtml(); ?>
 <?php echo $this->getLayout()->createBlock('cms/block')->setBlockId('choose_us')->toHtml() ?>
