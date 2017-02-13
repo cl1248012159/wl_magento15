@@ -46,9 +46,9 @@ function hide_recetlyadd(){
     <?php if ($_cartQty>0): ?>
         <div class="summary">
             <?php if ($_cartQty==1): ?>
-                <p class="amount" onmouseover="show_recetlyadd()" ><?php echo $this->__('My Shopping Cart: <a href="%s">1 item</a>', $this->getUrl('checkout/cart')) ?></p>
+                <p class="amount" onmouseover="show_recetlyadd()" ><?php echo $this->__('My Shopping Cart: <a href="%s">1 item</a>', $this->getUrl('checkout/cart', array('_secure'=>true))) ?></p>
             <?php else: ?>
-                <p class="amount" onmouseover="show_recetlyadd()"><?php echo $this->__('My Shopping Cart: <a href="%s">%s items</a>', $this->getUrl('checkout/cart'), $_cartQty) ?></p>
+                <p class="amount" onmouseover="show_recetlyadd()"><?php echo $this->__('My Shopping Cart: <a href="%s">%s items</a>', $this->getUrl('checkout/cart', array('_secure'=>true)), $_cartQty) ?></p>
             <?php endif ?>
         </div>
     <?php endif ?>

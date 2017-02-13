@@ -60,7 +60,7 @@
 			 <?php $i = 1; foreach ($_productCollection as $_product): ?>
 			<dd <?php if($i>3){?> onmouseover="show_this('product<?php echo $i;?>')" onmouseout="hide_this('product<?php echo $i;?>')" <?php }?> id="product<?php echo $i;?>" class="<?php if($i<4){echo 'dd_over';}else{echo 'dd_out';}?> elltext">
 				<a class="out_a elltext" href="<?php echo $_product->getProductUrl() ?>" 
-				title="<?php echo $_productNameStripped; ?>"	>
+				title="<?php echo $_product->getSku().' - '.$_helper->productAttribute($_product, $_product->getName() , 'name'); ?>"	>
 					<?php echo $_product->getSku().' - '.$_helper->productAttribute($_product, $_product->getName() , 'name'); ?>
 				</a>
 				<div class="detail">
@@ -73,7 +73,7 @@
 					</span>
 					<?php  ?>
 					<div style="float:left; margin:5px 0;">
-						<?php echo $_helper->productAttribute($_product, $_product->getQ_A() , 'q_a'); ?>
+						<?php echo $_helper->productAttribute($_product, $_product->getQA() , 'q_a'); ?>
 						Updated: <?php echo $_helper->productAttribute($_product, $_product->getUpdated() , 'updated'); ?>
 					</div>
 					<div class="totalprice">Total:</div>
