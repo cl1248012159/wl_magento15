@@ -25,3 +25,5 @@ var
 
 .DS_Store
 .idea/
+app/etc/local.xml
+app/code/community/ET/IpSecurity/Model/Observer.php
