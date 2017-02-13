@@ -27,3 +27,4 @@ var
 .idea/
 app/etc/local.xml
 app/code/community/ET/IpSecurity/Model/Observer.php
+media/catalog/product/cache/
