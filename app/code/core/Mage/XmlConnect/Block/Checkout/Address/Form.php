@@ -10,28 +10,28 @@
  * http://opensource.org/licenses/osl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Mage
  * @package     Mage_XmlConnect
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
  * Customer address form xml renderer for onepage checkout
  *
- * @category   Mage
- * @package    Mage_XmlConnect
- * @author     Magento Core Team <core@magentocommerce.com>
+ * @category    Mage
+ * @package     Mage_XmlConnect
+ * @author      Magento Core Team <core@magentocommerce.com>
  */
-class Mage_XmlConnect_Block_Checkout_Address_Form extends Mage_Core_Block_Template
+class Mage_XmlConnect_Block_Checkout_Address_Form extends Mage_Core_Block_Abstract
 {
     /**
      * Render customer address form xml
@@ -40,123 +40,93 @@ class Mage_XmlConnect_Block_Checkout_Address_Form extends Mage_Core_Block_Templa
      */
     protected function _toHtml()
     {
+        $addressType = $this->getType() ? $this->getType() : 'billing';
 
-        $address  = $this->getAddress();
-        $xmlModel = new Mage_XmlConnect_Model_Simplexml_Element('<node></node>');
-        $customer = Mage::getSingleton('customer/session')->getCustomer();
-        $addressType = $this->getType() == 'shipping' || $this->getType() == 'billing' ? $this->getType() : 'billing';
-        $isAllowedGuestCheckout= Mage::getSingleton('checkout/session')->getQuote()->isAllowedGuestCheckout();
-        if ($addressType == 'shipping') {
-            $addressId = $customer->getDefaultShipping();
-            $address   = $customer->getAddressById($addressId);
-        } else {
-            $addressId = $customer->getDefaultBilling();
-            $address   = $customer->getAddressById($addressId);
+        $action = Mage::helper('xmlconnect')->getActionUrl('xmlconnect/checkout/savebillingaddress');
+
+        /** @var Mage_XmlConnect_Model_Simplexml_Form $fromXmlObj */
+        $fromXmlObj = Mage::getModel('xmlconnect/simplexml_form', array(
+            'xml_id' => 'address_form', 'action' => $action, 'use_container' => true
+        ))->setFieldNameSuffix($addressType);
+
+        $isAllowedGuestCheckout = Mage::getSingleton('checkout/session')->getQuote()->isAllowedGuestCheckout();
+
+        $fromXmlObj->addField('firstname', 'text', array(
+            'name' => 'firstname', 'label' => $this->__('First Name'), 'required' => 'true'
+        ));
+
+        $fromXmlObj->addField('lastname', 'text', array(
+            'name' => 'lastname', 'label' => $this->__('Last Name'), 'required' => 'true'
+        ));
+
+        $fromXmlObj->addField('company', 'text', array('name' => 'company', 'label' => $this->__('Company')));
+
+        if ($isAllowedGuestCheckout && !Mage::getSingleton('customer/session')->isLoggedIn()
+            && $addressType == 'billing'
+        ) {
+            $fromXmlObj->addField('email', 'text', array(
+                'name' => 'email', 'label' => $this->__('Email Address'), 'required' => 'true'
+            ))->addValidator()->addRule(array('type' => 'email', 'message' => 'Wrong email format'));
         }
 
-        if ($addressId && $address && $address->getId()) {
+        $fromXmlObj->addField('street', 'text', array(
+            'name' => 'street[]', 'label' => $this->__('Address'), 'required' => 'true'
+        ));
 
-            $firstname  = $xmlModel->xmlentities(strip_tags($address->getFirstname()));
-            $lastname   = $xmlModel->xmlentities(strip_tags($address->getLastname()));
-            $company    = $xmlModel->xmlentities(strip_tags($address->getCompany()));
-            if ($isAllowedGuestCheckout) {
-                $email  = $xmlModel->xmlentities(strip_tags($address->getEmail()));
-            }
-            $street1    = $xmlModel->xmlentities(strip_tags($address->getStreet(1)));
-            $street2    = $xmlModel->xmlentities(strip_tags($address->getStreet(2)));
-            $city       = $xmlModel->xmlentities(strip_tags($address->getCity()));
-            $regionId   = $xmlModel->xmlentities($address->getRegionId());
-            $region = Mage::getModel('directory/region')->load($regionId)->getName();
-            if (!$region) {
-                $region = $address->getRegion();
-            }
-            $region     = $xmlModel->xmlentities(strip_tags($region));
-            $postcode   = $xmlModel->xmlentities(strip_tags($address->getPostcode()));
-            $countryId  = $xmlModel->xmlentities($address->getCountryId());
-            $telephone  = $xmlModel->xmlentities(strip_tags($address->getTelephone()));
-            $fax        = $xmlModel->xmlentities(strip_tags($address->getFax()));
-        } else {
-            $firstname = $lastname = $company = $email = $street1 = $street2 = '';
-            $city = $region = $postcode = $telephone = $fax = '';
-            $countryId = $regionId = null;
-        }
+        $fromXmlObj->addField('street_2', 'text', array('name' => 'street[]', 'label' => $this->__('Address 2')));
 
-        $countries = $this->_getCountryOptions();
+        $fromXmlObj->addField('city', 'text', array(
+            'name' => 'city', 'label' => $this->__('City'), 'required' => 'true'
+        ));
 
-        $regions = array();
-        $countryOptionsXml = '<values>';
-        if (is_array($countries)) {
-            foreach ($countries as $key => $data) {
-                if ($data['value']) {
-                    $regions = $this->_getRegionOptions($data['value']);
-                }
-                $countryOptionsXml .= '
-                <item relation="' . (is_array($regions) && !empty($regions) ? 'region_id' : 'region') . '"' . ($countryId == $data['value'] ? ' selected="1"' : '') . '>
-                    <label>' . $xmlModel->xmlentities((string)$data['label']) . '</label>
-                    <value>' . $xmlModel->xmlentities($data['value']) . '</value>';
-                if (is_array($regions) && !empty($regions)) {
-                    $countryOptionsXml .= '<regions>';
-                    foreach ($regions as $_key => $_data) {
-                        $countryOptionsXml .= '<region_item' . ($regionId == $_data['value'] ? ' selected="1"' : '') . '>';
-                        $countryOptionsXml .=
-                            '<label>' . $xmlModel->xmlentities((string)$_data['label']) . '</label>
-                             <value>' . $xmlModel->xmlentities($_data['value']) . '</value>';
-                        $countryOptionsXml .= '</region_item>';
-                    }
-                    $countryOptionsXml .= '</regions>';
-                }
-                $countryOptionsXml .= '</item>';
-            }
-        }
-        $countryOptionsXml .= '</values>';
+        $fromXmlObj->addField('country_id', 'countryListSelect', array(
+            'name' => 'country_id', 'label' => $this->__('Country'), 'required' => 'true', 'old_format' => true
+        ));
 
-        $xml = <<<EOT
-<form name="address_form" method="post">
-        <field name="{$addressType}[firstname]" type="text" label="{$xmlModel->xmlentities($this->__('First Name'))}" required="true" value="$firstname" />
-        <field name="{$addressType}[lastname]" type="text" label="{$xmlModel->xmlentities($this->__('Last Name'))}" required="true" value="$lastname" />
-        <field name="{$addressType}[company]" type="text" label="{$xmlModel->xmlentities($this->__('Company'))}" value="$company" />
-EOT;
-        if ($isAllowedGuestCheckout && !Mage::getSingleton('customer/session')->isLoggedIn() && $addressType == 'billing') {
-            $xml .= <<<EOT
-        <field name="{$addressType}[email]" type="text" label="{$xmlModel->xmlentities($this->__('Email Address'))}" value="$email" required="true" >
-            <validators>
-                <validator type="email" message="{$xmlModel->xmlentities($this->__('Wrong email format'))}"/>
-            </validators>
-        </field>
-EOT;
-        }
-        $xml .= <<<EOT
-        <field name="{$addressType}[street][]" type="text" label="{$xmlModel->xmlentities($this->__('Address'))}" required="true" value="$street1" />
-        <field name="{$addressType}[street][]" type="text" label="{$xmlModel->xmlentities($this->__('Address 2'))}" value="$street2" />
-        <field name="{$addressType}[city]" type="text" label="{$xmlModel->xmlentities($this->__('City'))}" required="true" value="$city" />
-        <field name="{$addressType}[country_id]" type="select" label="{$xmlModel->xmlentities($this->__('Country'))}" required="true">
-            $countryOptionsXml
-        </field>
-        <field name="{$addressType}[region]" type="text" label="{$xmlModel->xmlentities($this->__('State/Province'))}" value="$region" />
-        <field name="{$addressType}[region_id]" type="select" label="{$xmlModel->xmlentities($this->__('State/Province'))}" required="true" />
-        <field name="{$addressType}[postcode]" type="text" label="{$xmlModel->xmlentities($this->__('Zip/Postal Code'))}" required="true" value="$postcode" />
-        <field name="{$addressType}[telephone]" type="text" label="{$xmlModel->xmlentities($this->__('Telephone'))}" required="true" value="$telephone" />
-        <field name="{$addressType}[fax]" type="text" label="{$xmlModel->xmlentities($this->__('Fax'))}" value="$fax" />
-        <field name="{$addressType}[save_in_address_book]" type="checkbox" label="{$xmlModel->xmlentities($this->__('Save in address book'))}"/>
-</form>
-EOT;
-        return $xml;
+        $fromXmlObj->addField('region', 'text', array('name' => 'region', 'label' => $this->__('State/Province')));
+
+        $fromXmlObj->addField('region_id', 'select', array(
+            'name' => 'region_id', 'label' => $this->__('State/Province'), 'required' => 'true'
+        ));
+
+        $fromXmlObj->addField('postcode', 'text', array(
+            'name' => 'postcode', 'label' => $this->__('Zip/Postal Code'), 'required' => 'true'
+        ));
+
+        $fromXmlObj->addField('telephone', 'text', array(
+            'name' => 'telephone', 'label' => $this->__('Telephone'), 'required' => 'true'
+        ));
+
+        $fromXmlObj->addField('fax', 'text', array('name' => 'fax', 'label' => $this->__('Fax')));
+
+        $fromXmlObj->addField('save_in_address_book', 'checkbox', array(
+            'name' => 'save_in_address_book','label' => $this->__('Save in address book')
+        ));
+
+        // Add custom address attributes
+        Mage::helper('xmlconnect/customer_form_renderer')
+            ->setAttributesBlockName('customer_form_billing_address_user_defined_attributes')
+            ->setFormCode('customer_register_address')->setBlockEntity(Mage::getModel('customer/address'))
+            ->addCustomAttributes($fromXmlObj, $this->getLayout(), $addressType);
+
+        return $fromXmlObj->getXml();
     }
 
     /**
      * Retrieve regions by country
      *
+     * @deprecated will delete in the next version
      * @param string $countryId
      * @return array
      */
     protected function _getRegionOptions($countryId)
     {
-        $cacheKey = 'DIRECTORY_REGION_SELECT_STORE'.Mage::app()->getStore()->getId().$countryId;
-        if (Mage::app()->useCache('config') && $cache = Mage::app()->loadCache($cacheKey)) {
+        $cacheKey = 'DIRECTORY_REGION_SELECT_STORE' . Mage::app()->getStore()->getId() . $countryId;
+        $cache = Mage::app()->loadCache($cacheKey);
+        if (Mage::app()->useCache('config') && $cache) {
             $options = unserialize($cache);
         } else {
-            $collection = Mage::getModel('directory/region')->getResourceCollection()
-                ->addCountryFilter($countryId)
+            $collection = Mage::getModel('directory/region')->getResourceCollection()->addCountryFilter($countryId)
                 ->load();
             $options = $collection->toOptionArray();
             if (Mage::app()->useCache('config')) {
@@ -169,17 +139,19 @@ EOT;
     /**
      * Retrieve countries
      *
+     * @deprecated will delete in the next version
      * @return array
      */
     protected function _getCountryOptions()
     {
-        $cacheKey = 'DIRECTORY_COUNTRY_SELECT_STORE_'.Mage::app()->getStore()->getCode();
-        if (Mage::app()->useCache('config') && $cache = Mage::app()->loadCache($cacheKey)) {
+        $cacheKey = 'DIRECTORY_COUNTRY_SELECT_STORE_' . Mage::app()->getStore()->getCode();
+        $cache = Mage::app()->loadCache($cacheKey);
+        if (Mage::app()->useCache('config') && $cache) {
             $options = unserialize($cache);
         } else {
-            $collection = Mage::getModel('directory/country')->getResourceCollection()
-                ->loadByStore();
-            $options = $collection->toOptionArray();
+            /** @var $collection Mage_Directory_Model_Mysql4_Country_Collection */
+            $collection = Mage::getModel('directory/country')->getResourceCollection()->loadByStore();
+            $options = $collection->toOptionArray(false);
             if (Mage::app()->useCache('config')) {
                 Mage::app()->saveCache(serialize($options), $cacheKey, array('config'));
             }

@@ -10,18 +10,18 @@
  * http://opensource.org/licenses/osl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Mage
  * @package     Mage_CatalogRule
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
@@ -29,6 +29,19 @@
  */
 class Mage_CatalogRule_Model_Observer
 {
+    /**
+     * Preload price rules for all items in quote
+     *
+     * @var array
+     */
+    protected $_preloadedPrices = array();
+
+    /**
+     * Store calculated catalog rules prices for products
+     * Prices collected per website, customer group, date and product
+     *
+     * @var array
+     */
     protected $_rulePrices = array();
 
     /**
@@ -44,40 +57,87 @@ class Mage_CatalogRule_Model_Observer
             return;
         }
 
-        $productWebsiteIds = $product->getWebsiteIds();
+        Mage::getModel('catalogrule/rule')->applyAllRulesToProduct($product);
 
-        $rules = Mage::getModel('catalogrule/rule')->getCollection()
-            ->addFieldToFilter('is_active', 1);
+        return $this;
+    }
 
-        foreach ($rules as $rule) {
-            if (!is_array($rule->getWebsiteIds())) {
-                $ruleWebsiteIds = (array)explode(',', $rule->getWebsiteIds());
-            } else {
-                $ruleWebsiteIds = $rule->getWebsiteIds();
-            }
-            $websiteIds = array_intersect($productWebsiteIds, $ruleWebsiteIds);
-            $rule->applyToProduct($product, $websiteIds);
+    /**
+     * Load matched catalog price rules for specific product.
+     * Is used for comparison in Mage_CatalogRule_Model_Resource_Rule::applyToProduct method
+     *
+     * @param   Varien_Event_Observer $observer
+     * @return  Mage_CatalogRule_Model_Observer
+     */
+    public function loadProductRules($observer)
+    {
+        /** @var Mage_Catalog_Model_Product $product */
+        $product = $observer->getEvent()->getProduct();
+        if (!$product instanceof Mage_Catalog_Model_Product) {
+            return $this;
         }
+        Mage::getModel('catalogrule/rule')->loadProductRules($product);
         return $this;
     }
 
     /**
      * Apply all price rules for current date.
-     * Handle cataolg_product_import_after event
+     * Handle catalog_product_import_after event
      *
      * @param   Varien_Event_Observer $observer
+     *
      * @return  Mage_CatalogRule_Model_Observer
      */
     public function applyAllRules($observer)
     {
+        /** @var $resource Mage_CatalogRule_Model_Resource_Rule */
         $resource = Mage::getResourceSingleton('catalogrule/rule');
-        $resource->applyAllRulesForDateRange($resource->formatDate(mktime(0,0,0)));
-        Mage::app()->removeCache('catalog_rules_dirty');
+        $resource->applyAllRules();
+        Mage::getModel('catalogrule/flag')->loadSelf()
+            ->setState(0)
+            ->save();
+
+        return $this;
+    }
+
+    /**
+     * Preload all price rules for all items in quote
+     *
+     * @param   Varien_Event_Observer $observer
+     *
+     * @return  Mage_CatalogRule_Model_Observer
+     */
+    public function preloadPriceRules(Varien_Event_Observer $observer)
+    {
+        $quote = $observer->getQuote();
+        $date = Mage::app()->getLocale()->storeTimeStamp($quote->getStoreId());
+        $wId = $quote->getStore()->getWebsiteId();
+        $gId = $quote->getCustomerGroupId();
+
+        $productIds = array();
+        foreach ($quote->getAllItems() as $item) {
+            $productIds[] = $item->getProductId();
+        }
+
+        $cacheKey = spl_object_hash($quote);
+
+        if (!isset($this->_preloadedPrices[$cacheKey])) {
+            $this->_preloadedPrices[$cacheKey] = Mage::getResourceSingleton('catalogrule/rule')
+                 ->getRulePrices($date, $wId, $gId, $productIds);
+        }
+
+        foreach ($this->_preloadedPrices[$cacheKey] as $pId => $price) {
+            $key = $this->_getRulePricesKey(array($date, $wId, $gId, $pId));
+            $this->_rulePrices[$key] = $price;
+        }
+
         return $this;
     }
 
     /**
      * Apply catalog price rules to product on frontend
+     *
+     * @param   Varien_Event_Observer $observer
      *
      * @return  Mage_CatalogRule_Model_Observer
      */
@@ -107,7 +167,7 @@ class Mage_CatalogRule_Model_Observer
             $gId = Mage::getSingleton('customer/session')->getCustomerGroupId();
         }
 
-        $key = "$date|$wId|$gId|$pId";
+        $key = $this->_getRulePricesKey(array($date, $wId, $gId, $pId));
         if (!isset($this->_rulePrices[$key])) {
             $rulePrice = Mage::getResourceModel('catalogrule/rule')
                 ->getRulePrice($date, $wId, $gId, $pId);
@@ -123,6 +183,8 @@ class Mage_CatalogRule_Model_Observer
     /**
      * Apply catalog price rules to product in admin
      *
+     * @param   Varien_Event_Observer $observer
+     *
      * @return  Mage_CatalogRule_Model_Observer
      */
     public function processAdminFinalPrice($observer)
@@ -137,13 +199,13 @@ class Mage_CatalogRule_Model_Observer
             $gId = $ruleData->getCustomerGroupId();
             $pId = $product->getId();
 
-            $key = "$date|$wId|$gId|$pId";
+            $key = $this->_getRulePricesKey(array($date, $wId, $gId, $pId));
         }
-        elseif ($product->getWebsiteId() != null && $product->getCustomerGroupId() != null) {
-            $wId = $product->getWebsiteId();
+        elseif (!is_null($storeId) && !is_null($product->getCustomerGroupId())) {
+            $wId = Mage::app()->getStore($storeId)->getWebsiteId();
             $gId = $product->getCustomerGroupId();
             $pId = $product->getId();
-            $key = "$date|$wId|$gId|$pId";
+            $key = $this->_getRulePricesKey(array($date, $wId, $gId, $pId));
         }
 
         if ($key) {
@@ -157,6 +219,7 @@ class Mage_CatalogRule_Model_Observer
                 $product->setFinalPrice($finalPrice);
             }
         }
+
         return $this;
     }
 
@@ -164,6 +227,7 @@ class Mage_CatalogRule_Model_Observer
      * Calculate price using catalog price rules of configurable product
      *
      * @param Varien_Event_Observer $observer
+     *
      * @return Mage_CatalogRule_Model_Observer
      */
     public function catalogProductTypeConfigurablePrice(Varien_Event_Observer $observer)
@@ -178,6 +242,7 @@ class Mage_CatalogRule_Model_Observer
                 $product->setConfigurablePrice($productPriceRule);
             }
         }
+
         return $this;
     }
 
@@ -188,14 +253,21 @@ class Mage_CatalogRule_Model_Observer
      * we should generate data for interval -1 day ... +1 day
      *
      * @param   Varien_Event_Observer $observer
+     *
      * @return  Mage_CatalogRule_Model_Observer
      */
     public function dailyCatalogUpdate($observer)
     {
-        Mage::getResourceSingleton('catalogrule/rule')->applyAllRulesForDateRange();
+        /** @var $model Mage_CatalogRule_Model_Rule */
+        $model = Mage::getSingleton('catalogrule/rule');
+        $model->applyAll();
+
         return $this;
     }
 
+    /**
+     * Clean out calculated catalog rule prices for products
+     */
     public function flushPriceCache()
     {
         $this->_rulePrices = array();
@@ -210,11 +282,11 @@ class Mage_CatalogRule_Model_Observer
     public function prepareCatalogProductPriceIndexTable(Varien_Event_Observer $observer)
     {
         $select             = $observer->getEvent()->getSelect();
+
         $indexTable         = $observer->getEvent()->getIndexTable();
         $entityId           = $observer->getEvent()->getEntityId();
         $customerGroupId    = $observer->getEvent()->getCustomerGroupId();
         $websiteId          = $observer->getEvent()->getWebsiteId();
-
         $websiteDate        = $observer->getEvent()->getWebsiteDate();
         $updateFields       = $observer->getEvent()->getUpdateFields();
 
@@ -230,6 +302,7 @@ class Mage_CatalogRule_Model_Observer
      * If rules were found they will be set to inactive and notice will be add to admin session
      *
      * @param string $attributeCode
+     *
      * @return Mage_CatalogRule_Model_Observer
      */
     protected function _checkCatalogRulesAvailability($attributeCode)
@@ -262,6 +335,7 @@ class Mage_CatalogRule_Model_Observer
      * Remove catalog attribute condition by attribute code from rule conditions
      *
      * @param Mage_CatalogRule_Model_Rule_Condition_Combine $combine
+     *
      * @param string $attributeCode
      */
     protected function _removeAttributeFromConditions($combine, $attributeCode)
@@ -271,7 +345,7 @@ class Mage_CatalogRule_Model_Observer
             if ($condition instanceof Mage_CatalogRule_Model_Rule_Condition_Combine) {
                 $this->_removeAttributeFromConditions($condition, $attributeCode);
             }
-            if ($condition instanceof Mage_CatalogRule_Model_Rule_Condition_Product) {
+            if ($condition instanceof Mage_Rule_Model_Condition_Product_Abstract) {
                 if ($condition->getAttribute() == $attributeCode) {
                     unset($conditions[$conditionId]);
                 }
@@ -284,6 +358,7 @@ class Mage_CatalogRule_Model_Observer
      * After save attribute if it is not used for promo rules already check rules for containing this attribute
      *
      * @param Varien_Event_Observer $observer
+     *
      * @return Mage_CatalogRule_Model_Observer
      */
     public function catalogAttributeSaveAfter(Varien_Event_Observer $observer)
@@ -338,7 +413,7 @@ class Mage_CatalogRule_Model_Observer
         $productIds = array();
         /* @var $product Mage_Core_Model_Product */
         foreach ($collection as $product) {
-            $key = implode('|', array($date, $websiteId, $groupId, $product->getId()));
+            $key = $this->_getRulePricesKey(array($date, $websiteId, $groupId, $product->getId()));
             if (!isset($this->_rulePrices[$key])) {
                 $productIds[] = $product->getId();
             }
@@ -348,11 +423,57 @@ class Mage_CatalogRule_Model_Observer
             $rulePrices = Mage::getResourceModel('catalogrule/rule')
                 ->getRulePrices($date, $websiteId, $groupId, $productIds);
             foreach ($productIds as $productId) {
-                $key = implode('|', array($date, $websiteId, $groupId, $productId));
+                $key = $this->_getRulePricesKey(array($date, $websiteId, $groupId, $productId));
                 $this->_rulePrices[$key] = isset($rulePrices[$productId]) ? $rulePrices[$productId] : false;
             }
         }
 
         return $this;
+    }
+
+    /**
+     * Create catalog rule relations for imported products
+     *
+     * @param Varien_Event_Observer $observer
+     */
+    public function createCatalogRulesRelations(Varien_Event_Observer $observer)
+    {
+        $adapter = $observer->getEvent()->getAdapter();
+        $affectedEntityIds = $adapter->getAffectedEntityIds();
+
+        if (empty($affectedEntityIds)) {
+            return;
+        }
+
+        $rules = Mage::getModel('catalogrule/rule')->getCollection()
+            ->addFieldToFilter('is_active', 1);
+
+        foreach ($rules as $rule) {
+            $rule->setProductsFilter($affectedEntityIds);
+            Mage::getResourceSingleton('catalogrule/rule')->updateRuleProductData($rule);
+        }
+    }
+
+    /**
+     * Runs Catalog Product Price Reindex
+     *
+     * @param Varien_Event_Observer $observer
+     */
+    public function runCatalogProductPriceReindex(Varien_Event_Observer $observer)
+    {
+        $indexProcess = Mage::getSingleton('index/indexer')->getProcessByCode('catalog_product_price');
+        if ($indexProcess) {
+            $indexProcess->reindexAll();
+        }
+    }
+
+    /**
+     * Generate key for rule prices
+     *
+     * @param array
+     */
+    protected function _getRulePricesKey($keyInfo)
+    {
+        return implode('|', $keyInfo);
     }
 }

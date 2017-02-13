@@ -10,18 +10,18 @@
  * http://opensource.org/licenses/osl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Mage
  * @package     Mage_Adminhtml
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
@@ -87,14 +87,20 @@ class Mage_Adminhtml_Block_Sales_Order_Create_Search_Grid extends Mage_Adminhtml
         return $this;
     }
 
+    /**
+     * Prepare collection to be displayed in the grid
+     *
+     * @return Mage_Adminhtml_Block_Sales_Order_Create_Search_Grid
+     */
     protected function _prepareCollection()
     {
         $attributes = Mage::getSingleton('catalog/config')->getProductAttributes();
-        $collection = Mage::getModel('catalog/product')->getCollection()
+        /* @var $collection Mage_Catalog_Model_Resource_Product_Collection */
+        $collection = Mage::getModel('catalog/product')->getCollection();
+        $collection
             ->setStore($this->getStore())
             ->addAttributeToSelect($attributes)
             ->addAttributeToSelect('sku')
-            ->addMinimalPrice()
             ->addStoreFilter()
             ->addAttributeToFilter('type_id', array_keys(
                 Mage::getConfig()->getNode('adminhtml/sales/order/create/available_product_types')->asArray()
@@ -107,6 +113,11 @@ class Mage_Adminhtml_Block_Sales_Order_Create_Search_Grid extends Mage_Adminhtml
         return parent::_prepareCollection();
     }
 
+    /**
+     * Prepare columns
+     *
+     * @return Mage_Adminhtml_Block_Sales_Order_Create_Search_Grid
+     */
     protected function _prepareColumns()
     {
         $this->addColumn('entity_id', array(
@@ -137,7 +148,7 @@ class Mage_Adminhtml_Block_Sales_Order_Create_Search_Grid extends Mage_Adminhtml
         ));
 
         $this->addColumn('in_products', array(
-            'header'    => 'Select',
+            'header'    => Mage::helper('sales')->__('Select'),
             'header_css_class' => 'a-center',
             'type'      => 'checkbox',
             'name'      => 'in_products',

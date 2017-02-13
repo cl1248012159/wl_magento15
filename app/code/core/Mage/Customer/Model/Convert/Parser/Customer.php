@@ -10,18 +10,18 @@
  * http://opensource.org/licenses/osl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Mage
  * @package     Mage_Customer
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 
@@ -534,7 +534,11 @@ class Mage_Customer_Model_Convert_Parser_Customer
                 }
                 $subscriber = Mage::getModel('newsletter/subscriber')->loadByCustomer($model);
                 if ($subscriber->getId()) {
-                    $row['is_subscribed'] = $subscriber->getSubscriberStatus() == Mage_Newsletter_Model_Subscriber::STATUS_SUBSCRIBED ? Mage_Customer_Model_Customer::SUBSCRIBED_YES : Mage_Customer_Model_Customer::SUBSCRIBED_NO;
+                    if ($subscriber->getSubscriberStatus() == Mage_Newsletter_Model_Subscriber::STATUS_SUBSCRIBED) {
+                        $row['is_subscribed'] = Mage_Customer_Model_Customer::SUBSCRIBED_YES;
+                    } else {
+                        $row['is_subscribed'] = Mage_Customer_Model_Customer::SUBSCRIBED_NO;
+                    }
                 }
                 if(!isset($row['created_in'])){
                     $row['created_in'] = 'Admin';
@@ -658,13 +662,15 @@ class Mage_Customer_Model_Convert_Parser_Customer
 
 
                     if (!$billingAddress  instanceof Mage_Customer_Model_Address) {
-                        $billingAddress = new Mage_Customer_Model_Address();
+                        $billingAddress = Mage::getModel('customer/address');
                         if ($customer->getId() && $customer->getDefaultBilling()) {
                             $billingAddress->setId($customer->getDefaultBilling());
                         }
                     }
 
-                    $regions = Mage::getResourceModel('directory/region_collection')->addRegionNameFilter($row['billing_region'])->load();
+                    $regions = Mage::getResourceModel('directory/region_collection')
+                        ->addRegionNameFilter($row['billing_region'])
+                        ->load();
                     if ($regions) foreach($regions as $region) {
                        $regionId = $region->getId();
                     }
@@ -699,13 +705,15 @@ class Mage_Customer_Model_Convert_Parser_Customer
 
                     $shippingAddress = $model->getPrimaryShippingAddress();
                     if (!$shippingAddress instanceof Mage_Customer_Model_Address) {
-                        $shippingAddress = new Mage_Customer_Model_Address();
+                        $shippingAddress = Mage::getModel('customer/address');
                         if ($customer->getId() && $customer->getDefaultShipping()) {
                             $shippingAddress->setId($customer->getDefaultShipping());
                         }
                     }
 
-                    $regions = Mage::getResourceModel('directory/region_collection')->addRegionNameFilter($row['shipping_region'])->load();
+                    $regions = Mage::getResourceModel('directory/region_collection')
+                        ->addRegionNameFilter($row['shipping_region'])
+                        ->load();
                     if ($regions) foreach($regions as $region) {
                        $regionId = $region->getId();
                     }

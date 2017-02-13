@@ -9,17 +9,17 @@
  * http://opensource.org/licenses/afl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Mage
  * @package     Mage_Adminhtml
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -31,7 +31,7 @@ var widgetTools = {
 
     onAjaxSuccess: function(transport) {
         if (transport.responseText.isJSON()) {
-            var response = transport.responseText.evalJSON()
+            var response = transport.responseText.evalJSON();
             if (response.error) {
                 throw response;
             } else if (response.ajaxExpired && response.ajaxRedirect) {
@@ -51,7 +51,7 @@ var widgetTools = {
             closable:true,
             className:'magento',
             windowClassName:"popup-window",
-            title:'Insert Widget',
+            title:Translator.translate('Insert Widget...'),
             top:50,
             width:950,
             //height:450,
@@ -74,7 +74,7 @@ var widgetTools = {
             window.close();
         }
     }
-}
+};
 
 var WysiwygWidget = {};
 WysiwygWidget.Widget = Class.create();
@@ -88,6 +88,9 @@ WysiwygWidget.Widget.prototype = {
         this.optionsUrl = optionsSourceUrl;
         this.optionValues = new Hash({});
         this.widgetTargetId = widgetTargetId;
+        if (typeof(tinyMCE) != "undefined" && tinyMCE.activeEditor) {
+            this.bMark = tinyMCE.activeEditor.selection.getBookmark();
+        }
 
         Event.observe(this.widgetEl, "change", this.loadOptions.bind(this));
 
@@ -231,6 +234,14 @@ WysiwygWidget.Widget.prototype = {
                     try {
                         widgetTools.onAjaxSuccess(transport);
                         Windows.close("widget_window");
+
+                        if (typeof(tinyMCE) != "undefined" && tinyMCE.activeEditor) {
+                            tinyMCE.activeEditor.focus();
+                            if (this.bMark) {
+                                tinyMCE.activeEditor.selection.moveToBookmark(this.bMark);
+                            }
+                        }
+
                         this.updateContent(transport.responseText);
                     } catch(e) {
                         alert(e.message);
@@ -261,7 +272,7 @@ WysiwygWidget.Widget.prototype = {
     getWysiwygNode: function() {
         return tinyMCE.activeEditor.selection.getNode();
     }
-}
+};
 
 WysiwygWidget.chooser = Class.create();
 WysiwygWidget.chooser.prototype = {
@@ -393,4 +404,4 @@ WysiwygWidget.chooser.prototype = {
     setElementLabel: function(value) {
         this.getElementLabel().innerHTML = value;
     }
-}
+};

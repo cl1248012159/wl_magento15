@@ -10,18 +10,18 @@
  * http://opensource.org/licenses/osl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Mage
  * @package     Mage_Catalog
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
@@ -49,7 +49,7 @@ class Mage_Catalog_Block_Layer_View extends Mage_Core_Block_Template
 
     /**
      * Attribute Filter Block Name
-     * 
+     *
      * @var string
      */
     protected $_attributeFilterBlockName;
@@ -83,11 +83,11 @@ class Mage_Catalog_Block_Layer_View extends Mage_Core_Block_Template
      */
     protected function _initBlocks()
     {
-        $this->_stateBlockName = 'catalog/layer_state';
-        $this->_categoryBlockName = 'catalog/layer_filter_category';
-        $this->_attributeFilterBlockName = 'catalog/layer_filter_attribute';
-        $this->_priceFilterBlockName = 'catalog/layer_filter_price';
-        $this->_decimalFilterBlockName = 'catalog/layer_filter_decimal';
+        $this->_stateBlockName              = 'catalog/layer_state';
+        $this->_categoryBlockName           = 'catalog/layer_filter_category';
+        $this->_attributeFilterBlockName    = 'catalog/layer_filter_attribute';
+        $this->_priceFilterBlockName        = 'catalog/layer_filter_price';
+        $this->_decimalFilterBlockName      = 'catalog/layer_filter_decimal';
     }
 
     /**
@@ -123,11 +123,9 @@ class Mage_Catalog_Block_Layer_View extends Mage_Core_Block_Template
         foreach ($filterableAttributes as $attribute) {
             if ($attribute->getAttributeCode() == 'price') {
                 $filterBlockName = $this->_priceFilterBlockName;
-            }
-            elseif ($attribute->getBackendType() == 'decimal') {
+            } elseif ($attribute->getBackendType() == 'decimal') {
                 $filterBlockName = $this->_decimalFilterBlockName;
-            }
-            else {
+            } else {
                 $filterBlockName = $this->_attributeFilterBlockName;
             }
 
@@ -243,5 +241,15 @@ class Mage_Catalog_Block_Layer_View extends Mage_Core_Block_Template
     protected function _getPriceFilter()
     {
         return $this->getChild('_price_filter');
+    }
+
+    /**
+     * Get url for 'Clear All' link
+     *
+     * @return string
+     */
+    public function getClearUrl()
+    {
+        return $this->getChild('layer_state')->getClearUrl();
     }
 }

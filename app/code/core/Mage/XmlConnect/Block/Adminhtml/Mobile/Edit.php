@@ -10,18 +10,26 @@
  * http://opensource.org/licenses/osl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Mage
  * @package     Mage_XmlConnect
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
+
+/**
+ * Application edit block
+ *
+ * @category    Mage
+ * @package     Mage_XmlConnect
+ * @author      Magento Core Team <core@magentocommerce.com>
  */
 class Mage_XmlConnect_Block_Adminhtml_Mobile_Edit extends Mage_Adminhtml_Block_Widget_Form_Container
 {
@@ -34,9 +42,8 @@ class Mage_XmlConnect_Block_Adminhtml_Mobile_Edit extends Mage_Adminhtml_Block_W
         $this->_controller  = 'adminhtml_mobile';
         $this->_blockGroup  = 'xmlconnect';
         parent::__construct();
-        $app = $this->getApplication();
-
         if ((bool)!Mage::getSingleton('adminhtml/session')->getNewApplication()) {
+            $app = Mage::helper('xmlconnect')->getApplication();
             $this->_updateButton('save', 'label', $this->__('Save'));
             $this->_updateButton('save', 'onclick', 'if (editForm.submit()) {disableElements(\'save\')}');
 
@@ -58,7 +65,7 @@ class Mage_XmlConnect_Block_Adminhtml_Mobile_Edit extends Mage_Adminhtml_Block_W
                 .'if (editForm.submit($(\'edit_form\').action + \'back/edit/\')) {disableElements(\'save\')};}';
             if ($app->getId()) {
                 $this->_formScripts[] = 'function saveAndSubmitApp() {'
-                    .'if (editForm.submit($(\'edit_form\').action+\'submitapp/' . $app->getId() . '\')) {'
+                    .'if (editForm.submit($(\'edit_form\').action + \'submitapp/' . $app->getId() . '\')) {'
                     .'disableElements(\'save\')};}';
             }
         } else {
@@ -73,24 +80,38 @@ class Mage_XmlConnect_Block_Adminhtml_Mobile_Edit extends Mage_Adminhtml_Block_W
     }
 
     /**
-     * Retrieve currently edited application object
+     * Adding JS scripts and styles to block
      *
-     * @return Mage_XmlConnect_Model_Application
-     */
-    public function getApplication()
-    {
-        return Mage::registry('current_app');
-    }
-
-    /**
-     * Adding JS scripts to block
-     *
+     * @throws Mage_Core_Exception
      * @return Mage_Adminhtml_Block_Widget_Form_Container
      */
     protected function _prepareLayout()
     {
         $this->getLayout()->getBlock('head')->addJs('jscolor/jscolor.js');
         $this->getLayout()->getBlock('head')->addJs('scriptaculous/scriptaculous.js');
+
+        if ((bool)!Mage::getSingleton('adminhtml/session')->getNewApplication()) {
+            $deviceType = Mage::helper('xmlconnect')->getDeviceType();
+            switch ($deviceType) {
+                case Mage_XmlConnect_Helper_Data::DEVICE_TYPE_IPHONE:
+                    $this->getLayout()->getBlock('head')->addItem('skin_css', 'xmlconnect/mobile-home.css');
+                    $this->getLayout()->getBlock('head')->addItem('skin_css', 'xmlconnect/mobile-catalog.css');
+                    break;
+                case Mage_XmlConnect_Helper_Data::DEVICE_TYPE_IPAD:
+                    $this->getLayout()->getBlock('head')->addItem('skin_css', 'xmlconnect/mobile-ipad-home.css');
+                    $this->getLayout()->getBlock('head')->addItem('skin_css', 'xmlconnect/mobile-ipad-catalog.css');
+                    break;
+                case Mage_XmlConnect_Helper_Data::DEVICE_TYPE_ANDROID:
+                    $this->getLayout()->getBlock('head')->addItem('skin_css', 'xmlconnect/mobile-android.css');
+                    break;
+                default:
+                    Mage::throwException(
+                        $this->__('Device doesn\'t recognized: "%s". Unable to load preview model.', $deviceType)
+                    );
+                    break;
+            }
+        }
+
         return parent::_prepareLayout();
     }
 
@@ -101,9 +122,12 @@ class Mage_XmlConnect_Block_Adminhtml_Mobile_Edit extends Mage_Adminhtml_Block_W
      */
     public function getHeaderText()
     {
-        $app = $this->getApplication();
-        if ($app && $app->getId()) {
-            return $this->__('Edit App "%s"', $this->htmlEscape($app->getName()));
+        if ((bool)!Mage::getSingleton('adminhtml/session')->getNewApplication()) {
+            $app = Mage::helper('xmlconnect')->getApplication();
+        }
+
+        if (isset($app) && $app->getId()) {
+            return $this->__('Edit App "%s"', $this->escapeHtml($app->getName()));
         } else {
             return $this->__('New App');
         }

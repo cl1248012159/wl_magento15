@@ -10,18 +10,18 @@
  * http://opensource.org/licenses/osl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Varien
  * @package     Varien_Data
- * @copyright   Copyright (c) 2008 Irubin Consulting Inc. DBA Varien (http://www.varien.com)
- * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
@@ -116,10 +116,11 @@ class Varien_Data_Form_Element_Collection implements ArrayAccess, IteratorAggreg
      *
      * @todo get it straight with $after
      * @param Varien_Data_Form_Element_Abstract $element
-     * @param boolean|'^'|string $after
-     * @return Varien_Data_Form_Element_Abstract
+     * @param bool|string $after
+     *
+     * @return Varien_Data_Form_Element_Collection
      */
-    public function add(Varien_Data_Form_Element_Abstract $element, $after=false)
+    public function add(Varien_Data_Form_Element_Abstract $element, $after = false)
     {
         // Set the Form for the node
         if ($this->_container->getForm() instanceof Varien_Data_Form) {
@@ -139,7 +140,7 @@ class Varien_Data_Form_Element_Collection implements ArrayAccess, IteratorAggreg
                 if ($currElement->getId() == $after) {
                     $newOrderElements[] = $currElement;
                     $newOrderElements[] = $element;
-                    $this->_elements = array_merge($newOrderElements, array_slice($this->_elements, $index+1));
+                    $this->_elements = array_merge($newOrderElements, array_slice($this->_elements, $index + 1));
                     return $element;
                 }
                 $newOrderElements[] = $currElement;
@@ -175,6 +176,8 @@ class Varien_Data_Form_Element_Collection implements ArrayAccess, IteratorAggreg
                 unset($this->_elements[$index]);
             }
         }
+        // Renumber elements for further correct adding and removing other elements
+        $this->_elements = array_merge($this->_elements, array());
         return $this;
     }
 

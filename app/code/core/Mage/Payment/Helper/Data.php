@@ -10,18 +10,18 @@
  * http://opensource.org/licenses/osl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Mage
  * @package     Mage_Payment
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
@@ -263,5 +263,38 @@ class Mage_Payment_Helper_Data extends Mage_Core_Helper_Abstract
             }
         }
         return $result;
+    }
+
+    /**
+     * Returns value of Zero Subtotal Checkout / Enabled
+     *
+     * @param mixed $store
+     * @return boolean
+     */
+    public function isZeroSubTotal($store = null)
+    {
+        return Mage::getStoreConfig(Mage_Payment_Model_Method_Free::XML_PATH_PAYMENT_FREE_ACTIVE, $store);
+    }
+
+    /**
+     * Returns value of Zero Subtotal Checkout / New Order Status
+     *
+     * @param mixed $store
+     * @return string
+     */
+    public function getZeroSubTotalOrderStatus($store = null)
+    {
+        return Mage::getStoreConfig(Mage_Payment_Model_Method_Free::XML_PATH_PAYMENT_FREE_ORDER_STATUS, $store);
+    }
+
+    /**
+     * Returns value of Zero Subtotal Checkout / Automatically Invoice All Items
+     *
+     * @param mixed $store
+     * @return string
+     */
+    public function getZeroSubTotalPaymentAutomaticInvoice($store = null)
+    {
+        return Mage::getStoreConfig(Mage_Payment_Model_Method_Free::XML_PATH_PAYMENT_FREE_PAYMENT_ACTION, $store);
     }
 }

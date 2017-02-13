@@ -10,23 +10,25 @@
  * http://opensource.org/licenses/osl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Mage
  * @package     Mage_XmlConnect
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
- * @method Mage_XmlConnect_Model_Mysql4_Application _getResource()
- * @method Mage_XmlConnect_Model_Mysql4_Application getResource()
+ * Xmlconnect Application model
+ *
+ * @method Mage_XmlConnect_Model_Resource_Application _getResource()
+ * @method Mage_XmlConnect_Model_Resource_Application getResource()
  * @method string getName()
  * @method Mage_XmlConnect_Model_Application setName(string $value)
  * @method string getCode()
@@ -40,8 +42,6 @@
  * @method Mage_XmlConnect_Model_Application setActiveTo(string $value)
  * @method string getUpdatedAt()
  * @method Mage_XmlConnect_Model_Application setUpdatedAt(string $value)
- * @method string getConfiguration()
- * @method Mage_XmlConnect_Model_Application setConfiguration(string $value)
  * @method int getStatus()
  * @method Mage_XmlConnect_Model_Application setStatus(int $value)
  * @method int getBrowsingMode()
@@ -55,59 +55,40 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
 {
     /**
      * Application code cookie name
-     *
-     * @var string
      */
-    const APP_CODE_COOKIE_NAME = 'app_code';
+    const APP_CODE_COOKIE_NAME      = 'app_code';
+
+    /**
+     * Device screen size name
+     */
+    const APP_SCREEN_SIZE_NAME      = 'screen_size';
 
     /**
      * Device screen size name
      *
-     * @var string
+     * @deprecated will delete in the next version
      */
-    const APP_SCREEN_SIZE_NAME = 'screen_size';
-
-    /**
-     * Device screen size name
-     *
-     * @var string
-     */
-    const APP_SCREEN_SIZE_DEFAULT = '320x480';
+    const APP_SCREEN_SIZE_DEFAULT   = '320x480';
 
     /**
      * Device screen size source name
-     *
-     * @var string
      */
     const APP_SCREEN_SOURCE_DEFAULT = 'default';
 
     /**
      * Application status "submitted" value
-     *
-     * @var int
      */
-    const APP_STATUS_SUCCESS = 1;
+    const APP_STATUS_SUCCESS    = 1;
 
     /**
      * Application status "not submitted" value
-     *
-     * @var int
      */
-    const APP_STATUS_INACTIVE = 0;
+    const APP_STATUS_INACTIVE   = 0;
 
     /**
      * Application prefix length of cutted part of deviceType and storeCode
-     *
-     * @var int
      */
     const APP_PREFIX_CUT_LENGTH = 3;
-
-    /**
-     * Images in "Params" history table
-     *
-     * @var array
-     */
-    protected $_imageIds = array('icon', 'loader_image', 'logo', 'big_logo');
 
     /**
      * Last submitted data from history table
@@ -140,14 +121,43 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
     /**
      * Main configuration of current application
      *
+     * @deprecated Serialized config storage has been removed
      * @var null|array
      */
     protected $conf;
 
     /**
-     * Submission/Resubmission key max length
+     * Configuration model
      *
-     * @var int
+     * @var Mage_XmlConnect_Model_ConfigData
+     */
+    protected $_configModel;
+
+    /**
+     * Flag of loaded configuration
+     *
+     * @var bool
+     */
+    protected $_isConfigurationLoaded = false;
+
+    /**
+     * Social networking validation array
+     *
+     * Social networking validation array specified as
+     *      array (
+     *          network id => API key string length
+     *      )
+     *
+     * @var array
+     */
+    protected $_socialNetValidationArray = array(
+        Mage_XmlConnect_Helper_Data::SOCIAL_NETWORK_TWITTER,
+        Mage_XmlConnect_Helper_Data::SOCIAL_NETWORK_FACEBOOK,
+        Mage_XmlConnect_Helper_Data::SOCIAL_NETWORK_LINKEDIN,
+    );
+
+    /**
+     * Submission/Resubmission key max length
      */
     const APP_MAX_KEY_LENGTH = 40;
 
@@ -155,50 +165,131 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
      * XML path to config with an email address
      * for contact to receive credentials
      * of Urban Airship notifications
-     *
-     * @var string
      */
-    const XML_PATH_CONTACT_CREDENTIALS_EMAIL = 'xmlconnect/mobile_application/urbanairship_credentials_email';
+    const XML_PATH_CONTACT_CREDENTIALS_EMAIL        = 'xmlconnect/mobile_application/urbanairship_credentials_email';
 
     /**
      * XML path to config with Urban Airship Terms of Service URL
-     *
-     * @var string
      */
-    const XML_PATH_URBAN_AIRSHIP_TOS_URL = 'xmlconnect/mobile_application/urbanairship_terms_of_service_url';
+    const XML_PATH_URBAN_AIRSHIP_TOS_URL            = 'xmlconnect/mobile_application/urbanairship_terms_of_service_url';
+
+    /**
+     * XML path to config with Urban Airship partner's login URL
+     */
+    const XML_PATH_URBAN_AIRSHIP_PARTNER_LOGIN_URL  = 'xmlconnect/mobile_application/urbanairship_login_url';
+
+    /**
+     * XML path to config with Urban Airship Push notifications product URL
+     */
+    const XML_PATH_URBAN_AIRSHIP_ABOUT_PUSH_URL     = 'xmlconnect/mobile_application/urbanairship_push_url';
+
+    /**
+     * XML path to config with Urban Airship Rich Push notifications product URL
+     */
+    const XML_PATH_URBAN_AIRSHIP_ABOUT_RICH_PUSH_URL    = 'xmlconnect/mobile_application/urbanairship_rich_push_url';
 
     /**
      * XML path to config copyright data
-     *
-     * @var string
      */
-    const XML_PATH_DESIGN_FOOTER_COPYRIGHT = 'design/footer/copyright';
+    const XML_PATH_DESIGN_FOOTER_COPYRIGHT          = 'design/footer/copyright';
 
     /**
      * XML path to config restriction status
      * (EE module)
-     *
-     * @var string
      */
-    const XML_PATH_GENERAL_RESTRICTION_IS_ACTIVE = 'general/restriction/is_active';
+    const XML_PATH_GENERAL_RESTRICTION_IS_ACTIVE    = 'general/restriction/is_active';
 
     /**
      * XML path to config restriction mode
      * (EE module)
-     *
-     * @var string
      */
-    const XML_PATH_GENERAL_RESTRICTION_MODE = 'general/restriction/mode';
+    const XML_PATH_GENERAL_RESTRICTION_MODE         = 'general/restriction/mode';
 
+    /**
+     * XML path to config secure base link URL
+     */
+    const XML_PATH_SECURE_BASE_LINK_URL             = 'web/secure/base_link_url';
+
+    /**
+     * XML path to config for paypal business account
+     */
+    const XML_PATH_PAYPAL_BUSINESS_ACCOUNT          = 'paypal/general/business_account';
+
+    /**
+     * XML path to config for default cache time
+     */
+    const XML_PATH_DEFAULT_CACHE_LIFETIME           = 'xmlconnect/mobile_application/cache_lifetime';
+
+    /**
+     * XML path to How-To URL for twitter
+     */
+    const XML_PATH_HOWTO_TWITTER_URL                = 'xmlconnect/social_networking/howto_twitter_url';
+
+    /**
+     * XML path to How-To URL for facebook
+     */
+    const XML_PATH_HOWTO_FACEBOOK_URL               = 'xmlconnect/social_networking/howto_facebook_url';
+
+    /**
+     * XML path to How-To URL for linkedin
+     */
+    const XML_PATH_HOWTO_LINKEDIN_URL               = 'xmlconnect/social_networking/howto_linkedin_url';
+
+    /**
+     * XML path to XmlConnect module version
+     */
+    const XML_PATH_MODULE_VERSION                   = 'modules/Mage_XmlConnect/innerVersion';
+
+    /**
+     * Deprecated config flag
+     *
+     * @deprecated Serialized config storage has been removed
+     */
+    const DEPRECATED_CONFIG_FLAG                    = 'deprecated';
+
+    /**
+     * Pages config flag value
+     */
+    const STATIC_PAGE_CATEGORY                      = 'pages';
+
+    /**
+     * Delete on update paths for config data
+     *
+     * @var array
+     */
+    protected $_deleteOnUpdateConfig = array(self::STATIC_PAGE_CATEGORY => 'staticpage');
+
+    /**
+     * Current device model
+     *
+     * @var Mage_XmlConnect_Model_Device_Abstract
+     */
+    protected $_deviceModel;
+
+    /**
+     * Image limits model
+     *
+     * @var Mage_XmlConnect_Model_ImageLimits
+     */
+    protected $_imageLimitsModel;
+
+    /**
+     * Image action model
+     *
+     * @var Mage_XmlConnect_Model_ImageAction
+     */
+    protected $_imageActionModel;
 
     /**
      * Initialize application
      *
-     * @return void
+     * @return null
      */
     protected function _construct()
     {
         $this->_init('xmlconnect/application');
+        $this->_configModel = Mage::getModel('xmlconnect/configData');
+        $this->_configModel->setDeleteOnUpdate($this->getDeleteOnUpdateConfig());
     }
 
     /**
@@ -226,14 +317,14 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
     /**
      * Load data (flat array) for Varien_Data_Form
      *
-     * @param array $subtree
+     * @param array $subTree
      * @param string $prefix
      * @return array
      */
-    protected function _flatArray($subtree, $prefix=null)
+    protected function _flatArray($subTree, $prefix=null)
     {
         $result = array();
-        foreach ($subtree as $key => $value) {
+        foreach ($subTree as $key => $value) {
             if (is_null($prefix)) {
                 $name = $key;
             } else {
@@ -250,25 +341,25 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
     }
 
     /**
-     * Like array_merge_recursive(), but string values is replaced
+     * Like array_merge_recursive(), but string values will be replaced
      *
-     * @param array $a
-     * @param array $b
+     * @param array $array1
+     * @param array $array2
      * @return array
      */
-    protected function _configMerge(array $a, array $b)
+    protected function _configMerge(array $array1, array $array2)
     {
         $result = array();
-        $keys = array_unique(array_merge(array_keys($a), array_keys($b)));
+        $keys = array_unique(array_merge(array_keys($array1), array_keys($array2)));
         foreach ($keys as $key) {
-            if (!isset($a[$key])) {
-                $result[$key] = $b[$key];
-            } elseif (!isset($b[$key])) {
-                $result[$key] = $a[$key];
-            } elseif (is_scalar($a[$key]) || is_scalar($b[$key])) {
-                $result[$key] = $b[$key];
+            if (!isset($array1[$key])) {
+                $result[$key] = $array2[$key];
+            } elseif (!isset($array2[$key])) {
+                $result[$key] = $array1[$key];
+            } elseif (is_scalar($array1[$key]) || is_scalar($array2[$key])) {
+                $result[$key] = $array2[$key];
             } else {
-                $result[$key] = $this->_configMerge($a[$key], $b[$key]);
+                $result[$key] = $this->_configMerge($array1[$key], $array2[$key]);
             }
         }
         return $result;
@@ -277,7 +368,7 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
     /**
      * Set default configuration data
      *
-     * @return void
+     * @return null
      */
     public function loadDefaultConfiguration()
     {
@@ -310,6 +401,7 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
     /**
      * Load application configuration
      *
+     * @deprecated Serialized config storage has been removed
      * @return array
      */
     public function prepareConfiguration()
@@ -326,7 +418,7 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
     {
         $result = Mage::helper('xmlconnect')->getDeviceHelper()->getDefaultConfiguration();
         $result = $result['native'];
-        $extra = array();
+
         if (isset($this->_data['conf'])) {
             if (isset($this->_data['conf']['native'])) {
                 $result = $this->_configMerge($result, $this->_data['conf']['native']);
@@ -344,8 +436,8 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
                     if (!empty($extra['fontColors']['primary'])) {
                         $result['fonts']['Title2']['color'] = $extra['fontColors']['primary'];
                         $result['fonts']['Title3']['color'] = $extra['fontColors']['primary'];
-                        $result['fonts']['Text1']['color'] = $extra['fontColors']['primary'];
-                        $result['fonts']['Text2']['color'] = $extra['fontColors']['primary'];
+                        $result['fonts']['Text1']['color']  = $extra['fontColors']['primary'];
+                        $result['fonts']['Text2']['color']  = $extra['fontColors']['primary'];
                         $result['fonts']['Title7']['color'] = $extra['fontColors']['primary'];
                     }
                     if (!empty($extra['fontColors']['secondary'])) {
@@ -360,47 +452,79 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
                 }
             }
         }
-        $helperImage = Mage::helper('xmlconnect/image');
-        $screenSize = $this->getScreenSize();
-        $paths = $helperImage->getInterfaceImagesPathsConf();
-        foreach ($paths as $confPath => $dataPath) {
-            $imageNodeValue =& $helperImage->findPath($result, $dataPath);
-            if ($imageNodeValue) {
-                /**
-                 * Creating file ending (some_inner/some_dir/filename.png) For url
-                 */
-                $imageNodeValue = $helperImage->getFileCustomDirSuffixAsUrl($confPath, $imageNodeValue);
-            }
-        }
-        $result = $this->_absPath($result);
+
+        Mage::getModel('xmlconnect/images')->loadOldImageNodes($result);
+
         /**
          * General configuration
          */
         $result['general']['updateTimeUTC'] = strtotime($this->getUpdatedAt());
         $result['general']['browsingMode'] = $this->getBrowsingMode();
         $result['general']['currencyCode'] = Mage::app()->getStore($this->getStoreId())->getDefaultCurrencyCode();
-        $result['general']['secureBaseUrl'] = Mage::getStoreConfig(Mage_Core_Model_Store::XML_PATH_SECURE_BASE_URL, $this->getStoreId());
-        $maxRecipients = 0;
-        $allowGuest = 0;
+        $result['general']['secureBaseUrl'] = $this->getSecureBaseUrl();
+
+        $allowGuest = $maxRecipients = 0;
         if (Mage::getStoreConfig(Mage_Sendfriend_Helper_Data::XML_PATH_ENABLED)) {
-            $maxRecipients = Mage::getStoreConfig(Mage_Sendfriend_Helper_Data::XML_PATH_MAX_RECIPIENTS);
+            $maxRecipients = (int)Mage::getStoreConfig(Mage_Sendfriend_Helper_Data::XML_PATH_MAX_RECIPIENTS);
+            $maxRecipients = $maxRecipients > 0 ? $maxRecipients: 1;
             $allowGuest = Mage::getStoreConfig(Mage_Sendfriend_Helper_Data::XML_PATH_ALLOW_FOR_GUEST);
         }
         $result['general']['emailToFriendMaxRecepients'] = $maxRecipients;
         $result['general']['emailAllowGuest'] = $allowGuest;
-        $result['general']['primaryStoreLang'] = Mage::app()
-            ->getStore($this->getStoreId())->getConfig(Mage_Core_Model_Locale::XML_PATH_DEFAULT_LOCALE);
+        $result['general']['primaryStoreLang'] = Mage::app()->getStore($this->getStoreId())
+            ->getConfig(Mage_Core_Model_Locale::XML_PATH_DEFAULT_LOCALE);
         $result['general']['magentoVersion'] = Mage::getVersion();
-        $result['general']['copyright'] = Mage::getStoreConfig(self::XML_PATH_DESIGN_FOOTER_COPYRIGHT, $this->getStoreId());
+        $result['general']['copyright'] = Mage::helper('core')->stripTags(
+            Mage::getStoreConfig(self::XML_PATH_DESIGN_FOOTER_COPYRIGHT, $this->getStoreId())
+        );
+        $result['general']['xmlconnectVersion'] = Mage::getConfig()->getNode(self::XML_PATH_MODULE_VERSION);
 
-        $result['general']['isAllowedGuestCheckout'] = Mage::getSingleton('checkout/session')
-            ->getQuote()->isAllowedGuestCheckout();
+        $result['general']['isAllowedGuestCheckout'] = (int)Mage::getSingleton('checkout/session')->getQuote()
+            ->isAllowedGuestCheckout();
 
-        if (!Mage::getStoreConfigFlag('wishlist/general/active')) {
-            $result['general']['wishlistEnable'] = '0';
+        /**
+         * Check is guest can post product reviews
+         */
+        $result['general']['isAllowedGuestReview'] = Mage::helper('review')->getIsGuestAllowToWrite() ? '1' : '0';
+
+        /**
+        * Check is wishlist enabled in a config
+        */
+        $result['general']['wishlistEnable'] = Mage::getStoreConfigFlag('wishlist/general/active') ? '1' : '0';
+
+        /**
+         * "Use Secure URLs in Frontend" flag
+         */
+        $result['general']['useSecureURLInFrontend'] = $this->getUseSecureURLInFrontend();
+
+        /**
+         * Set flag is allowed guest checkout if quote contain downloadable product(s)
+         */
+        if ($this->isGuestBuyDownloadableProduct()) {
+            $result['general']['isAllowedGuestCheckoutForDownloadableProducts'] = '0';
         } else {
-            $result['general']['wishlistEnable'] = '1';
+            $result['general']['isAllowedGuestCheckoutForDownloadableProducts'] = '1';
         }
+
+        /**
+         * Is enabled Store credit functionality
+         */
+        $isStoreCreditEnable = $canShowHistoryFlag = 0;
+        if (is_object(Mage::getConfig()->getNode('modules/Enterprise_CustomerBalance'))) {
+            $storeCreditFlag = Mage::getStoreConfig(Enterprise_CustomerBalance_Helper_Data::XML_PATH_ENABLED);
+            $isStoreCreditEnable = (int)$storeCreditFlag;
+            $canShowHistoryFlag = (int)Mage::getStoreConfigFlag('customer/enterprise_customerbalance/show_history');
+        }
+
+        $result['general']['isStoreCreditEnabled'] = $isStoreCreditEnable;
+        $result['general']['isStoreCreditHistoryEnabled'] = $canShowHistoryFlag;
+
+        /**
+         * Is available Gift Card functionality
+         */
+        $result['general']['isGiftcardEnabled'] = (int) is_object(
+            Mage::getConfig()->getNode('modules/Enterprise_GiftCard')
+        );
 
         /**
          * PayPal configuration
@@ -409,16 +533,71 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
         $result['paypal']['merchantLabel'] = $this->getData('conf/special/merchantLabel');
 
         $isActive = 0;
-        if (isset($result['paypal']) && isset($result['paypal']['isActive'])) {
-            $isActive = (int)($result['paypal']['isActive'] && Mage::getModel('xmlconnect/payment_method_paypal_mep')->isAvailable(null));
+        $paypalMepIsAvailable = Mage::getModel('xmlconnect/payment_method_paypal_mep')->isAvailable(null);
+        if ($paypalMepIsAvailable && isset($result['paypal']['isActive'])) {
+            $isActive = (int) $result['paypal']['isActive'];
         }
         $result['paypal']['isActive'] = $isActive;
 
-        if ((int)Mage::getStoreConfig(self::XML_PATH_GENERAL_RESTRICTION_IS_ACTIVE)) {
-            $result['website_restrictions']['mode'] = (int) Mage::getStoreConfig(self::XML_PATH_GENERAL_RESTRICTION_MODE);
+        $paypalMeclIsAvailable = Mage::getModel('xmlconnect/payment_method_paypal_mecl')->isAvailable(null);
+
+        /**
+         * Pages configuration
+         */
+        $pages = Mage::getSingleton('xmlconnect/configuration')->getDeviceStaticPages();
+
+        if (!empty($pages)) {
+            $result['pages'] = $pages;
         }
 
+        /**
+         * PayPal Mobile Express Library Checkout
+         */
+        $result['paypalMecl']['isActive'] = (int) (
+            $paypalMeclIsAvailable
+            && $this->getData('config_data/payment/paypalmecl_is_active')
+        );
+
+        if ((int)Mage::getStoreConfig(self::XML_PATH_GENERAL_RESTRICTION_IS_ACTIVE)) {
+            $result['website_restrictions']['mode'] = (int)Mage::getStoreConfig(
+                self::XML_PATH_GENERAL_RESTRICTION_MODE
+            );
+        }
+
+        ksort($result);
         return $result;
+    }
+
+    /**
+     * Get secure base url
+     *
+     * @return string
+     */
+    public function getSecureBaseUrl()
+    {
+        return Mage::getStoreConfig(self::XML_PATH_SECURE_BASE_LINK_URL, $this->getStoreId());
+    }
+
+    /**
+     * Check is allowed guest checkout if quote contain downloadable product(s)
+     *
+     * @return bool
+     */
+    public function isGuestBuyDownloadableProduct()
+    {
+        return (bool)Mage::getStoreConfigFlag(
+            Mage_Downloadable_Model_Observer::XML_PATH_DISABLE_GUEST_CHECKOUT, $this->getStoreId()
+        );
+    }
+
+    /**
+     * Is forced front secure url
+     *
+     * @return int
+     */
+    public function getUseSecureURLInFrontend()
+    {
+        return (int) Mage::getStoreConfigFlag(Mage_Core_Model_Store::XML_PATH_SECURE_IN_FRONTEND);
     }
 
     /**
@@ -429,21 +608,20 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
     public function getScreenSize()
     {
         if (!isset($this->_data['screen_size'])) {
-            $this->_data['screen_size'] = self::APP_SCREEN_SIZE_DEFAULT;
+            $this->_data['screen_size'] = $this->getDeviceModel()->getDefaultScreenSize();
         }
         return $this->_data['screen_size'];
     }
 
     /**
-     * Setter
-     * for current screen_size parameter
+     * Setter for current screen_size parameter
      *
      * @param string $screenSize
-     * @return this
+     * @return Mage_XmlConnect_Model_Application
      */
     public function setScreenSize($screenSize)
     {
-        $this->_data['screen_size'] = Mage::helper('xmlconnect/image')->filterScreenSize((string) $screenSize);
+        $this->_data['screen_size'] = $screenSize;
         return $this;
     }
 
@@ -463,23 +641,21 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
     /**
      * Change URLs to absolute
      *
-     * @param array $subtree
+     * @param array $subTree
      * @return array
      */
-    protected function _absPath($subtree)
+    protected function _absPath($subTree)
     {
-        foreach ($subtree as $key => $value) {
+        foreach ($subTree as $key => $value) {
             if (!empty($value)) {
                 if (is_array($value)) {
-                    $subtree[$key] = $this->_absPath($value);
-                } elseif ((substr($key, -4) == 'icon') ||
-                    (substr($key, -4) == 'Icon') ||
-                    (substr($key, -5) == 'Image')) {
-                    $subtree[$key] = Mage::getBaseUrl('media') . 'xmlconnect/' . $value;
+                    $subTree[$key] = $this->_absPath($value);
+                } elseif (strtolower(substr($key, -4)) == 'icon' || strtolower(substr($key, -5)) == 'image') {
+                    $subTree[$key] = Mage::getBaseUrl('media') . 'xmlconnect/' . $value;
                 }
             }
         }
-        return $subtree;
+        return $subTree;
     }
 
     /**
@@ -489,10 +665,31 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
      */
     public function getPages()
     {
-        if (isset($this->_data['conf']['native']['pages'])) {
-            return $this->_data['conf']['native']['pages'];
+        if (isset($this->_data['conf']['pages'])) {
+            return $this->_data['conf']['pages'];
         }
         return array();
+    }
+
+    /**
+     * Get configuration model
+     *
+     * @return Mage_XmlConnect_Model_ConfigData
+     */
+    public function getConfigModel()
+    {
+        return $this->_configModel;
+    }
+
+    /**
+     * Set last updated datetime string
+     *
+     * @return Mage_XmlConnect_Model_Application
+     */
+    protected function _renewUpdatedAtTime()
+    {
+        $this->setUpdatedAt(Mage::getSingleton('core/date')->gmtDate());
+        return $this;
     }
 
     /**
@@ -502,10 +699,74 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
      */
     protected function _beforeSave()
     {
-        $conf = serialize($this->prepareConfiguration());
-        $this->setConfiguration($conf);
-        $this->setUpdatedAt(date('Y-m-d H:i:s', time()));
+        $this->_renewUpdatedAtTime();
         return $this;
+    }
+
+    /**
+     * Processing object after save data
+     *
+     * @return Mage_XmlConnect_Model_Application
+     */
+    protected function _afterSave()
+    {
+        $this->_saveConfigData();
+        $this->_saveDeprecatedConfig();
+        parent::_afterSave();
+        return $this;
+    }
+
+    /**
+     * Save configuration data of application model
+     *
+     * @return Mage_XmlConnect_Model_Application
+     */
+    protected function _saveConfigData()
+    {
+        $configuration = $this->getData('config_data');
+        if (is_array($configuration)) {
+            $this->getConfigModel()->setConfigData($this->getId(), $configuration)->initSaveConfig();
+        }
+        return $this;
+    }
+
+    /**
+     * Save old deprecated config to application config data table
+     *
+     * @deprecated Serialized config storage has been removed
+     * @return Mage_XmlConnect_Model_Application
+     */
+    private function _saveDeprecatedConfig()
+    {
+        $deprecatedConfig = $this->getData('conf');
+        if (is_array($deprecatedConfig)) {
+            $this->getConfigModel()->saveConfig(
+                $this->getId(), $this->convertOldConfing($deprecatedConfig), self::DEPRECATED_CONFIG_FLAG
+            );
+        }
+        return $this;
+    }
+
+    /**
+     * Convert deprecated configuration array to new standard
+     *
+     * @deprecated Serialized config storage has been removed
+     * @param array $conf
+     * @param bool $path
+     * @return array
+     */
+    public function convertOldConfing(array $conf, $path = false)
+    {
+        $result = array();
+        foreach ($conf as $key => $val) {
+            $key = $path ? $path . '/' . $key : $key;
+            if (is_array($val)) {
+                $result += $this->convertOldConfing($val, $key);
+            } else {
+                $result[$key] = $val;
+            }
+        }
+        return $result;
     }
 
     /**
@@ -515,17 +776,71 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
      */
     public function loadConfiguration()
     {
-        static $isConfigurationLoaded = null;
-
-        if (is_null($isConfigurationLoaded)) {
-            $configuration = $this->getConfiguration();
-            if (!empty($configuration)) {
-                $configuration = unserialize($configuration);
-                $this->setData('conf', $configuration);
-                $isConfigurationLoaded = true;
+        if (!$this->_isConfigurationLoaded) {
+            if ($this->getId()) {
+                $this->_loadDeprecatedConfig()->_loadConfigData();
+                $this->_isConfigurationLoaded = true;
             }
         }
         return $this;
+    }
+
+    /**
+     * Load configuration data
+     *
+     * @internal re-factoring in progress
+     * @return Mage_XmlConnect_Model_Application
+     */
+    protected function _loadConfigData()
+    {
+        $configuration = $this->getConfigModel()->getCollection()->addArrayFilter(array(
+            'application_id' => $this->getId(),
+            'category' => 'payment'
+        ))->toOptionArray();
+        $this->setData('config_data', $configuration);
+        return $this;
+    }
+
+    /**
+     * Load deprecated configuration
+     *
+     * @deprecated Serialized config storage has been removed
+     * @return Mage_XmlConnect_Model_Application
+     */
+    private function _loadDeprecatedConfig()
+    {
+        $configuration = $this->_convertConfig(
+            $this->getConfigModel()->getCollection()->addArrayFilter(array(
+                'application_id' => $this->getId(),
+                'category' => self::DEPRECATED_CONFIG_FLAG
+            ))->toOptionArray()
+        );
+        $this->setData('conf', $configuration);
+        return $this;
+    }
+
+    /**
+     * Convert old config data array
+     *
+     * @deprecated  Serialized config storage has been removed
+     * @throws Mage_Core_Exception
+     * @param  $config
+     * @return array
+     */
+    protected function _convertConfig($config)
+    {
+        $result = array();
+        foreach ($config as $values) {
+            foreach ($values as $path => $value) {
+                if (preg_match('@[^\w\/]@', $path)) {
+                    Mage::throwException(Mage::helper('xmlconnect')->__('Unsupported character in path: "%s"', $path));
+                }
+                $keyArray = explode('/', $path);
+                $keys = '$result["' . implode('"]["', $keyArray) . '"]';
+                eval($keys . ' = $value;');
+            }
+        }
+        return $result;
     }
 
     /**
@@ -560,7 +875,9 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
                     $conf['submit_restore'] = array();
                 }
                 foreach ($params as $id => $value) {
-                    if (!in_array($id, $this->_imageIds)) {
+                    $deviceImages = Mage::helper('xmlconnect')->getDeviceHelper()->getSubmitImages();
+
+                    if (!in_array($id, $deviceImages)) {
                         $conf['submit_text'][$id] = $value;
                     } else {
                         $conf['submit_restore'][$id] = $value;
@@ -582,8 +899,9 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
     {
         $images = array();
         $params = $this->getLastParams();
+        $deviceImages = Mage::helper('xmlconnect')->getDeviceHelper()->getSubmitImages();
 
-        foreach ($this->_imageIds as $id) {
+        foreach ($deviceImages as $id) {
             $path = $this->getData('conf/submit/'.$id);
             $basename = null;
             if (!empty($path)) {
@@ -591,17 +909,17 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
                  * Fetching data from session restored array
                  */
                  $basename = basename($path);
-            } else if (isset($params[$id])) {
+            } elseif (isset($params[$id])) {
                /**
                 * Fetching data from submission history table record
                 *
-                * converting :  "@\var\somedir\media\xmlconnect\form_icon_6.png" to "\var\somedir\media\xmlconnect\forn_icon_6.png"
+                * converting :  "@\var\somedir\media\xmlconnect\form_icon_6.png"
+                * to "\var\somedir\media\xmlconnect\forn_icon_6.png"
                 */
-//                $path = substr($params[$id], 1);
                 $basename = basename($params[$id]);
             }
             if (!empty($basename)) {
-                $images['conf/submit/'.$id] = Mage::getBaseUrl('media').'xmlconnect/'
+                $images['conf/submit/'.$id] = Mage::getBaseUrl('media') . 'xmlconnect/'
                     . Mage::helper('xmlconnect/image')->getFileDefaultSizeSuffixAsUrl($basename);
             }
         }
@@ -634,6 +952,7 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
         if ($validateConf !== true) {
             $errors = $validateConf;
         }
+
         if (!Zend_Validate::is($this->getName(), 'NotEmpty')) {
             $errors[] = Mage::helper('xmlconnect')->__('Please enter "App Title".');
         }
@@ -657,51 +976,12 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
         if ($validateConf !== true) {
             $errors = $validateConf;
         }
-        if (!Zend_Validate::is(isset($params['title']) ? $params['title'] : null, 'NotEmpty')) {
-            $errors[] = Mage::helper('xmlconnect')->__('Please enter the Title.');
-        }
 
-        if (isset($params['title'])) {
-            if ($this->getType() == Mage_XmlConnect_Helper_Data::DEVICE_TYPE_IPHONE) {
-                $strRules = array('max' => '12');
-            } else {
-                $strRules = array('max' => '200');
-            }
-            if (!Zend_Validate::is($params['title'], 'StringLength', $strRules)) {
-                $errors[] = Mage::helper('xmlconnect')->__('"Title" is more than %d characters long', $strRules['max']);
-            }
-        }
+        $submitErrors = Mage::helper('xmlconnect')->getDeviceHelper($this)->validateSubmit($params);
 
-        if (!Zend_Validate::is(isset($params['copyright']) ? $params['copyright'] : null, 'NotEmpty')) {
-            $errors[] = Mage::helper('xmlconnect')->__('Please enter the Copyright.');
+        if (count($submitErrors)) {
+            $errors = array_merge($errors, $submitErrors);
         }
-
-        if (empty($params['price_free'])) {
-            if (!Zend_Validate::is(isset($params['price']) ? $params['price'] : null, 'NotEmpty')) {
-                $errors[] = Mage::helper('xmlconnect')->__('Please enter the Price.');
-            }
-        }
-
-        if (!Zend_Validate::is(isset($params['country']) ? $params['country'] : null, 'NotEmpty')) {
-            $errors[] = Mage::helper('xmlconnect')->__('Please select at least one country.');
-        }
-
-        if ($this->getIsResubmitAction()) {
-            $resubmissionKey = isset($params['resubmission_activation_key']) ? $params['resubmission_activation_key'] : null;
-            if (!Zend_Validate::is($resubmissionKey, 'NotEmpty')) {
-                $errors[] = Mage::helper('xmlconnect')->__('Please enter the Resubmission Key.');
-            } else if (!Zend_Validate::is($resubmissionKey, 'StringLength', array(1, self::APP_MAX_KEY_LENGTH))) {
-                $errors[] = Mage::helper('xmlconnect')->__('Submit App failure. Invalid activation key provided');
-            }
-        } else {
-            $key = isset($params['key']) ? $params['key'] : null;
-            if (!Zend_Validate::is($key, 'NotEmpty')) {
-                $errors[] = Mage::helper('xmlconnect')->__('Please enter the Activation Key.');
-            } else if (!Zend_Validate::is($key, 'StringLength', array(1, self::APP_MAX_KEY_LENGTH))) {
-                $errors[] = Mage::helper('xmlconnect')->__('Submit App failure. Invalid activation key provided');
-            }
-        }
-
         if (empty($errors)) {
             return true;
         }
@@ -711,62 +991,39 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
     /**
      * Check config for valid values
      *
-     * @throws Mage_Core_Exception
      * @return bool|array
      */
     protected function _validateConf()
     {
+        $config   = $this->getConf();
+        $native = isset($config['native']) && is_array($config['native']) ? $config['native'] : false;
         $errors = array();
-        $conf = $this->getConf();
-        $native = isset($conf['native']) && is_array($conf['native']) ? $conf['native'] : false;
 
-        if ( ($native === false)
-            || (!isset($native['navigationBar']) || !is_array($native['navigationBar'])
-            || !isset($native['navigationBar']['icon'])
-            || !Zend_Validate::is($native['navigationBar']['icon'], 'NotEmpty'))) {
-            $errors[] = Mage::helper('xmlconnect')->__('Please upload  an image for "Logo in Header" field from Design Tab.');
-        }
-
-        $deviceType = Mage::helper('xmlconnect')->getApplication()->getType();
-        switch ($deviceType) {
-            case Mage_XmlConnect_Helper_Data::DEVICE_TYPE_IPHONE:
-                if (!Mage::helper('xmlconnect')->validateConfFieldNotEmpty('bannerImage', $native)) {
-                    $errors[] = Mage::helper('xmlconnect')->__('Please upload  an image for "Banner on Home Screen" field from Design Tab.');
+        foreach ($this->_socialNetValidationArray as $networkKey) {
+            if (isset($native['socialNetworking'][$networkKey]['isActive'])
+                && $native['socialNetworking'][$networkKey]['isActive']
+            ) {
+                if ($networkKey !== Mage_XmlConnect_Helper_Data::SOCIAL_NETWORK_FACEBOOK) {
+                    $networkName = ucfirst($networkKey);
+                    if (!isset($native['socialNetworking'][$networkKey]['apiKey'])
+                        || !Zend_Validate::is($native['socialNetworking'][$networkKey]['apiKey'], 'NotEmpty')
+                    ) {
+                        $errors[] = Mage::helper('xmlconnect')->__('%s API Key required.', $networkName);
+                    }
+                    if (!isset($native['socialNetworking'][$networkKey]['secretKey'])
+                        || !Zend_Validate::is($native['socialNetworking'][$networkKey]['secretKey'], 'NotEmpty')
+                    ) {
+                        $errors[] = Mage::helper('xmlconnect')->__('%s Secret Key required.', $networkName);
+                    }
+                } else {
+                    $networkName = ucfirst($networkKey);
+                    if (!isset($native['socialNetworking'][$networkKey]['appID'])
+                        || !Zend_Validate::is($native['socialNetworking'][$networkKey]['appID'], 'NotEmpty')
+                    ) {
+                        $errors[] = Mage::helper('xmlconnect')->__('%s Application ID required.', $networkName);
+                    }
                 }
-
-                if (!Mage::helper('xmlconnect')->validateConfFieldNotEmpty('backgroundImage', $native)) {
-                    $errors[] = Mage::helper('xmlconnect')->__('Please upload  an image for "App Background" field from Design Tab.');
-                }
-                break;
-            case Mage_XmlConnect_Helper_Data::DEVICE_TYPE_IPAD:
-                if (!Mage::helper('xmlconnect')->validateConfFieldNotEmpty('bannerIpadImage', $native)) {
-                    $errors[] = Mage::helper('xmlconnect')->__('Please upload  an image for "Banner on Home Screen" field from Design Tab.');
-                }
-
-                if (!Mage::helper('xmlconnect')->validateConfFieldNotEmpty('backgroundIpadLandscapeImage', $native)) {
-                    $errors[] = Mage::helper('xmlconnect')->__('Please upload  an image for "App Background (landscape mode)" field from Design Tab.');
-                }
-
-                if (!Mage::helper('xmlconnect')->validateConfFieldNotEmpty('backgroundIpadPortraitImage', $native)) {
-                    $errors[] = Mage::helper('xmlconnect')->__('Please upload  an image for "App Background (portrait mode)" field from Design Tab.');
-                }
-                break;
-            case Mage_XmlConnect_Helper_Data::DEVICE_TYPE_ANDROID:
-                if (!Mage::helper('xmlconnect')->validateConfFieldNotEmpty('bannerAndroidImage', $native)) {
-                    $errors[] = Mage::helper('xmlconnect')->__('Please upload  an image for "Banner on Home Screen" field from Design Tab.');
-                }
-
-                if (!Mage::helper('xmlconnect')->validateConfFieldNotEmpty('backgroundAndroidLandscapeImage', $native)) {
-                    $errors[] = Mage::helper('xmlconnect')->__('Please upload  an image for "App Background (landscape mode)" field from Design Tab.');
-                }
-
-                if (!Mage::helper('xmlconnect')->validateConfFieldNotEmpty('backgroundAndroidPortraitImage', $native)) {
-                    $errors[] = Mage::helper('xmlconnect')->__('Please upload  an image for "App Background (portrait mode)" field from Design Tab.');
-                }
-                break;
-            default:
-                Mage::throwException(Mage::helper('xmlconnect')->__('Device doesn\'t recognized: "%s". Unable to load a helper.', $deviceType));
-                break;
+            }
         }
 
         if (empty($errors)) {
@@ -794,9 +1051,7 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
             $params['code'] = $this->getCode();
             $params['type'] = $this->getType();
             $params['url'] = Mage::getUrl('xmlconnect/configuration/index', array(
-                '_store' => $this->getStoreId(),
-                '_nosid' => true,
-                'app_code' => $this->getCode()
+                '_store' => $this->getStoreId(), '_nosid' => true, 'app_code' => $this->getCode()
             ));
 
             $params['magentoversion'] = Mage::getVersion();
@@ -814,7 +1069,8 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
             } else {
                 $params['key'] = isset($params['key']) ? trim($params['key']) : '';
             }
-            // processing files :
+
+            // processing files
             $submit = array();
             if (isset($this->_data['conf']['submit']) && is_array($this->_data['conf']['submit'])) {
                  $submit = $this->_data['conf']['submit'];
@@ -825,10 +1081,13 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
                 $submitRestore = $this->_data['conf']['submit_restore'];
             }
 
-            foreach ($this->_imageIds as $id) {
+            $deviceImages = Mage::helper('xmlconnect')->getDeviceHelper()->getSubmitImages();
+
+            foreach ($deviceImages as $id) {
                 if (isset($submit[$id])) {
-                    $params[$id] = '@' . $submit[$id];
-                } else if (isset($submitRestore[$id])) {
+                    $params[$id] = '@' . Mage::helper('xmlconnect/image')->getDefaultSizeUploadDir() . DS
+                        . $submit[$id];
+                } elseif (isset($submitRestore[$id])) {
                     $params[$id] = $submitRestore[$id];
                 }
             }
@@ -858,9 +1117,7 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
     public function getActivationKey()
     {
         $key = null;
-        if (isset($this->_data['conf']) && is_array($this->_data['conf']) &&
-            isset($this->_data['conf']['submit_text']) && is_array($this->_data['conf']['submit_text']) &&
-            isset($this->_data['conf']['submit_text']['key'])) {
+        if (isset($this->_data['conf']['submit_text']['key'])) {
             $key = $this->_data['conf']['submit_text']['key'];
         }
         return $key;
@@ -873,8 +1130,18 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
      */
     public function updateAllAppsUpdatedAtParameter()
     {
-        $this->_getResource()->updateAllAppsUpdatedAtParameter();
+        $this->_renewUpdatedAtTime()->_getResource()->updateUpdatedAtParameter($this);
         return $this;
+    }
+
+    /**
+     * Checks if notifications is active
+     *
+     * @return boolean
+     */
+    public function isNotificationsActive()
+    {
+        return (boolean)$this->loadConfiguration()->getData('conf/native/notifications/isActive');
     }
 
     /**
@@ -915,5 +1182,124 @@ class Mage_XmlConnect_Model_Application extends Mage_Core_Model_Abstract
     public function getAppMasterSecret()
     {
         return $this->getData('conf/native/notifications/applicationMasterSecret');
+    }
+
+    /**
+     * Getter for Application Cache Lifetime
+     *
+     * @return int|string
+     */
+    public function getCacheLifetime()
+    {
+        $lifetime = (int)$this->loadConfiguration()->getData('conf/native/cacheLifetime');
+        return $lifetime <= 0 ? '' : $lifetime;
+    }
+
+    /**
+     * Get delete on update paths for config data
+     *
+     * @return array
+     */
+    public function getDeleteOnUpdateConfig()
+    {
+        return $this->_deleteOnUpdateConfig;
+    }
+
+    /**
+     * Set delete on update paths for config data
+     *
+     * @param array $pathsToDelete
+     * @return Mage_XmlConnect_Model_Application
+     */
+    public function setDeleteOnUpdateConfig(array $pathsToDelete)
+    {
+        $this->_deleteOnUpdateConfig = array_merge($this->_deleteOnUpdateConfig, $pathsToDelete);
+        return $this;
+    }
+
+    /**
+     * Get current device model
+     *
+     * @return Mage_XmlConnect_Model_Device_Abstract
+     */
+    public function getDeviceModel()
+    {
+        if (null === $this->_deviceModel) {
+            $this->setDeviceModel();
+        }
+        return $this->_deviceModel;
+    }
+
+    /**
+     * Set current device model
+     *
+     * @throws Mage_Core_Exception
+     * @param Mage_XmlConnect_Model_Device_Abstract|null $deviceModel
+     * @return Mage_XmlConnect_Model_Application
+     */
+    public function setDeviceModel($deviceModel = null)
+    {
+        if ($deviceModel instanceof Mage_XmlConnect_Model_Device_Abstract) {
+            $this->_deviceModel = $deviceModel;
+        } elseif ($this->getType()) {
+            $this->_deviceModel = Mage::getModel('xmlconnect/device_' . $this->getType(), $this);
+        } else {
+            Mage::throwException(Mage::helper('xmlconnect')->__('Device doesn\'t recognized'));
+        }
+        return $this;
+    }
+
+    /**
+     * Get current image limit model
+     *
+     * @return Mage_XmlConnect_Model_ImageLimits
+     */
+    public function getImageLimitsModel()
+    {
+        if ($this->_imageLimitsModel === null) {
+            $this->setImageLimitsModel();
+        }
+        return $this->_imageLimitsModel;
+    }
+
+    /**
+     * Set current image limit model
+     *
+     * @param null|Mage_XmlConnect_Model_ImageLimits $imageLimitsModel
+     * @return Mage_XmlConnect_Model_Application
+     */
+    public function setImageLimitsModel($imageLimitsModel = null)
+    {
+        if (null === $imageLimitsModel) {
+            $this->_imageLimitsModel = Mage::getModel('xmlconnect/imageLimits', $this);
+        } else {
+            $this->_imageLimitsModel = $imageLimitsModel;
+        }
+        return $this;
+    }
+
+    /**
+     * Get image action model
+     *
+     * @return Mage_XmlConnect_Model_ImageAction
+     */
+    public function getImageActionModel()
+    {
+        if (null === $this->_imageActionModel) {
+            $this->_imageActionModel = Mage::getModel('xmlconnect/imageAction', $this);
+        }
+        return $this->_imageActionModel;
+    }
+
+    /**
+     * Set image action model
+     *
+     * @param Mage_XmlConnect_Model_ImageAction $imageActionModel
+     * @return Mage_XmlConnect_Model_Application
+     */
+    public function setImageActionModel($imageActionModel)
+    {
+        $this->_imageActionModel = $imageActionModel;
+        return $this;
     }
 }

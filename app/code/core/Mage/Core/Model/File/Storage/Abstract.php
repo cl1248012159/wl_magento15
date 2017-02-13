@@ -10,18 +10,18 @@
  * http://opensource.org/licenses/osl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Mage
  * @package     Mage_Core
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 
@@ -48,8 +48,10 @@ abstract class Mage_Core_Model_File_Storage_Abstract extends Mage_Core_Model_Abs
      */
     public function getMediaBaseDirectory()
     {
-        if (is_null($this->_mediaBaseDirectory)) {
-            $this->_mediaBaseDirectory = Mage::helper('core/file_storage_database')->getMediaBaseDir();
+        if (null === $this->_mediaBaseDirectory) {
+            /** @var $helper Mage_Core_Helper_File_Storage_Database */
+            $helper = Mage::helper('core/file_storage_database');
+            $this->_mediaBaseDirectory = $helper->getMediaBaseDir();
         }
 
         return $this->_mediaBaseDirectory;
@@ -57,6 +59,7 @@ abstract class Mage_Core_Model_File_Storage_Abstract extends Mage_Core_Model_Abs
 
     /**
      * Collect file info
+     *
      * Return array(
      *  filename    => string
      *  content     => string|bool
@@ -69,17 +72,17 @@ abstract class Mage_Core_Model_File_Storage_Abstract extends Mage_Core_Model_Abs
      */
     public function collectFileInfo($path)
     {
-        $path = ltrim($path, DS);
+        $path = ltrim($path, '\\/');
         $fullPath = $this->getMediaBaseDirectory() . DS . $path;
-
+        $io = new Varien_Io_File();
         if (!file_exists($fullPath) || !is_file($fullPath)) {
-            Mage::throwException(Mage::helper('core')->__('File %s does not exist', $fullPath));
+            Mage::throwException(Mage::helper('core')->__('File %s does not exist', $io->getFilteredPath($fullPath)));
         }
         if (!is_readable($fullPath)) {
-            Mage::throwException(Mage::helper('core')->__('File %s is not readable', $fullPath));
+            Mage::throwException(Mage::helper('core')->__('File %s is not readable', $io->getFilteredPath($fullPath)));
         }
 
-        $path = str_replace(DS, '/', $path);
+        $path = str_replace(array('/', '\\'), '/', $path);
         $directory = dirname($path);
         if ($directory == '.') {
             $directory = null;

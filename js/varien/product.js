@@ -9,17 +9,17 @@
  * http://opensource.org/licenses/afl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Varien
  * @package     js
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 if(typeof Product=='undefined') {
@@ -128,17 +128,22 @@ Product.Zoom.prototype = {
     scale: function (v) {
         var centerX  = (this.containerDim.width*(1-this.imageZoom)/2-this.imageX)/this.imageZoom;
         var centerY  = (this.containerDim.height*(1-this.imageZoom)/2-this.imageY)/this.imageZoom;
-        var overSize = (this.imageDim.width > this.containerDim.width && this.imageDim.height > this.containerDim.height);
+        var overSize = (this.imageDim.width > this.containerDim.width || this.imageDim.height > this.containerDim.height);
 
         this.imageZoom = this.floorZoom+(v*(this.ceilingZoom-this.floorZoom));
 
         if (overSize) {
-            if (this.imageDim.width > this.containerDim.width) {
+            if (this.imageDim.width > this.imageDim.height) {
                 this.imageEl.style.width = (this.imageZoom*this.containerDim.width)+'px';
+            } else {
+                this.imageEl.style.height = (this.imageZoom*this.containerDim.height)+'px';
             }
-
-            if(this.containerDim.ratio){
-                this.imageEl.style.height = (this.imageZoom*this.containerDim.width*this.containerDim.ratio)+'px'; // for safari
+            if (this.containerDim.ratio) {
+                if (this.imageDim.width > this.imageDim.height) {
+                    this.imageEl.style.height = (this.imageZoom*this.containerDim.width*this.containerDim.ratio)+'px'; // for safari
+                } else {
+                    this.imageEl.style.width = (this.imageZoom*this.containerDim.height*this.containerDim.ratio)+'px'; // for safari
+                }
             }
         } else {
             this.slider.setDisabled();
@@ -235,7 +240,7 @@ Product.Zoom.prototype = {
 
         return [x,y];
     }
-}
+};
 
 /**************************** CONFIGURABLE PRODUCT **************************/
 Product.Config = Class.create();
@@ -249,7 +254,7 @@ Product.Config.prototype = {
         this.prices     = config.prices;
 
         this.settings.each(function(element){
-            Event.observe(element, 'change', this.configure.bind(this))
+            Event.observe(element, 'change', this.configure.bind(this));
         }.bind(this));
 
         // fill state
@@ -260,7 +265,7 @@ Product.Config.prototype = {
                 element.attributeId = attributeId;
                 this.state[attributeId] = false;
             }
-        }.bind(this))
+        }.bind(this));
 
         // Init settings dropdown
         var childSettings = [];
@@ -268,7 +273,7 @@ Product.Config.prototype = {
             var prevSetting = this.settings[i-1] ? this.settings[i-1] : false;
             var nextSetting = this.settings[i+1] ? this.settings[i+1] : false;
             if(i==0){
-                this.fillSelect(this.settings[i])
+                this.fillSelect(this.settings[i]);
             }
             else {
                 this.settings[i].disabled=true;
@@ -278,12 +283,12 @@ Product.Config.prototype = {
             $(this.settings[i]).nextSetting   = nextSetting;
             childSettings.push(this.settings[i]);
         }
-        
+
         // Set default values - from config and overwrite them by url values
         if (config.defaultValues) {
             this.values = config.defaultValues;
         }
-        
+
         var separatorIndex = window.location.href.indexOf('#');
         if (separatorIndex != -1) {
             var paramsStr = window.location.href.substr(separatorIndex+1);
@@ -299,7 +304,7 @@ Product.Config.prototype = {
         this.configureForValues();
         document.observe("dom:loaded", this.configureForValues.bind(this));
     },
-    
+
     configureForValues: function () {
         if (this.values) {
             this.settings.each(function(element){
@@ -335,7 +340,7 @@ Product.Config.prototype = {
     reloadOptionLabels: function(element){
         var selectedPrice;
         if(element.options[element.selectedIndex].config){
-            selectedPrice = parseFloat(element.options[element.selectedIndex].config.price)
+            selectedPrice = parseFloat(element.options[element.selectedIndex].config.price);
         }
         else{
             selectedPrice = 0;
@@ -363,7 +368,8 @@ Product.Config.prototype = {
         var attributeId = element.id.replace(/[a-z]*/, '');
         var options = this.getAttributeOptions(attributeId);
         this.clearSelect(element);
-        element.options[0] = new Option(this.config.chooseText, '');
+        element.options[0] = new Option('', '');
+        element.options[0].innerHTML = this.config.chooseText;
 
         var prevConfig = false;
         if(element.prevSetting){
@@ -489,7 +495,8 @@ Product.Config.prototype = {
             for(var i=this.settings.length-1;i>=0;i--){
                 var selected = this.settings[i].options[this.settings[i].selectedIndex];
                 if(selected.config){
-                    price+= parseFloat(selected.config.price);
+                    var parsedOldPrice = parseFloat(selected.config.oldPrice);
+                    price += isNaN(parsedOldPrice) ? 0 : parsedOldPrice;
                 }
             }
             if (price < 0)
@@ -502,7 +509,7 @@ Product.Config.prototype = {
 
         }
     }
-}
+};
 
 
 /**************************** SUPER PRODUCTS ********************************/
@@ -541,179 +548,4 @@ Product.Super.Configurable.prototype = {
             });
         }
     }
-}
-
-/**************************** PRICE RELOADER ********************************/
-Product.OptionsPrice = Class.create();
-Product.OptionsPrice.prototype = {
-    initialize: function(config) {
-        this.productId          = config.productId;
-        this.priceFormat        = config.priceFormat;
-        this.includeTax         = config.includeTax;
-        this.defaultTax         = config.defaultTax;
-        this.currentTax         = config.currentTax;
-        this.productPrice       = config.productPrice;
-        this.showIncludeTax     = config.showIncludeTax;
-        this.showBothPrices     = config.showBothPrices;
-        this.productPrice       = config.productPrice;
-        this.productOldPrice    = config.productOldPrice;
-        this.skipCalculate      = config.skipCalculate;
-        this.duplicateIdSuffix  = config.idSuffix;
-        this.specialTaxPrice    = config.specialTaxPrice;
-
-        this.oldPlusDisposition = config.oldPlusDisposition;
-        this.plusDisposition    = config.plusDisposition;
-
-        this.oldMinusDisposition = config.oldMinusDisposition;
-        this.minusDisposition    = config.minusDisposition;
-
-        this.optionPrices    = {};
-        this.containers      = {};
-
-        this.displayZeroPrice   = true;
-
-        this.initPrices();
-    },
-
-    setDuplicateIdSuffix: function(idSuffix) {
-        this.duplicateIdSuffix = idSuffix;
-    },
-
-    initPrices: function() {
-        this.containers[0] = 'product-price-' + this.productId;
-        this.containers[1] = 'bundle-price-' + this.productId;
-        this.containers[2] = 'price-including-tax-' + this.productId;
-        this.containers[3] = 'price-excluding-tax-' + this.productId;
-        this.containers[4] = 'old-price-' + this.productId;
-    },
-
-    changePrice: function(key, price) {
-        this.optionPrices[key] = price;
-    },
-
-    getOptionPrices: function() {
-        var price = 0;
-        var nonTaxable = 0;
-        var oldPrice = 0;
-        var priceInclTax = 0;
-        var currentTax = this.currentTax; 
-        $H(this.optionPrices).each(function(pair) {
-            if ('undefined' != typeof(pair.value.price) && 'undefined' != typeof(pair.value.oldPrice)) {
-                price += parseFloat(pair.value.price);
-                oldPrice += parseFloat(pair.value.oldPrice);
-            } else if (pair.key == 'nontaxable') {
-                nonTaxable = pair.value;
-            } else if (pair.key == 'priceInclTax') {
-                priceInclTax += pair.value;
-            } else if (pair.key == 'optionsPriceInclTax') {
-                priceInclTax += pair.value * (100 + currentTax) / 100; 
-            } else {
-                price += parseFloat(pair.value);
-                oldPrice += parseFloat(pair.value);
-            }
-        });
-        var result = [price, nonTaxable, oldPrice, priceInclTax];
-        return result;
-    },
-
-    reload: function() {
-        var price;
-        var formattedPrice;
-        var optionPrices = this.getOptionPrices();
-        var nonTaxable = optionPrices[1];
-        var optionOldPrice = optionPrices[2];
-        var priceInclTax = optionPrices[3];
-        optionPrices = optionPrices[0];
-        
-        $H(this.containers).each(function(pair) {
-            var _productPrice;
-            var _plusDisposition;
-            var _minusDisposition;
-            if ($(pair.value)) {
-                if (pair.value == 'old-price-'+this.productId && this.productOldPrice != this.productPrice) {
-                    _productPrice = this.productOldPrice;
-                    _plusDisposition = this.oldPlusDisposition;
-                    _minusDisposition = this.oldMinusDisposition;
-                } else {
-                    _productPrice = this.productPrice;
-                    _plusDisposition = this.plusDisposition;
-                    _minusDisposition = this.minusDisposition;
-                }
-
-                var price = 0;
-                if (pair.value == 'old-price-'+this.productId && optionOldPrice !== undefined) {
-                    price = optionOldPrice+parseFloat(_productPrice);
-                } else {
-                    price = optionPrices+parseFloat(_productPrice);
-                    priceInclTax += parseFloat(_productPrice) * (100 + this.currentTax) / 100;
-                }
-
-                if (this.specialTaxPrice == 'true') {
-                    var excl = price;
-                    var incl = priceInclTax;
-                } else if (this.includeTax == 'true') {
-                    // tax = tax included into product price by admin
-                    var tax = price / (100 + this.defaultTax) * this.defaultTax;
-                    var excl = price - tax;
-                    var incl = excl*(1+(this.currentTax/100));
-                } else {
-                    var tax = price * (this.currentTax / 100);
-                    var excl = price;
-                    var incl = excl + tax;
-                }
-
-                excl += parseFloat(_plusDisposition);
-                incl += parseFloat(_plusDisposition);
-                excl -= parseFloat(_minusDisposition);
-                incl -= parseFloat(_minusDisposition);
-
-                //adding nontaxlable part of options
-                excl += parseFloat(nonTaxable);
-                incl += parseFloat(nonTaxable);
-
-                if (pair.value == 'price-including-tax-'+this.productId) {
-                    price = incl;
-                } else if (pair.value == 'old-price-'+this.productId) {
-                    if (this.showIncludeTax || this.showBothPrices) {
-                        price = incl;
-                    } else {
-                        price = excl;
-                    }
-                } else {
-                    if (this.showIncludeTax) {
-                        price = incl;
-                    } else {
-                        if (!this.skipCalculate || _productPrice == 0) {
-                            price = excl;
-                        } else {
-                            price = optionPrices+parseFloat(_productPrice);
-                        }
-                    }
-                }
-
-                if (price < 0) price = 0;
-
-                if (price > 0 || this.displayZeroPrice) {
-                    formattedPrice = this.formatPrice(price);
-                } else {
-                    formattedPrice = '';
-                }
-
-                if ($(pair.value).select('.price')[0]) {
-                    $(pair.value).select('.price')[0].innerHTML = formattedPrice;
-                    if ($(pair.value+this.duplicateIdSuffix) && $(pair.value+this.duplicateIdSuffix).select('.price')[0]) {
-                        $(pair.value+this.duplicateIdSuffix).select('.price')[0].innerHTML = formattedPrice;
-                    }
-                } else {
-                    $(pair.value).innerHTML = formattedPrice;
-                    if ($(pair.value+this.duplicateIdSuffix)) {
-                        $(pair.value+this.duplicateIdSuffix).innerHTML = formattedPrice;
-                    }
-                }
-            };
-        }.bind(this));
-    },
-    formatPrice: function(price) {
-        return formatCurrency(price, this.priceFormat);
-    }
-}
+};

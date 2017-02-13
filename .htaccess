@@ -80,22 +80,22 @@
     # Insert filter on all content
     ###SetOutputFilter DEFLATE
     # Insert filter on selected content types only
-    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript
+    #AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript
 
     # Netscape 4.x has some problems...
-    BrowserMatch ^Mozilla/4 gzip-only-text/html
+    #BrowserMatch ^Mozilla/4 gzip-only-text/html
 
     # Netscape 4.06-4.08 have some more problems
-    BrowserMatch ^Mozilla/4\.0[678] no-gzip
+    #BrowserMatch ^Mozilla/4\.0[678] no-gzip
 
     # MSIE masquerades as Netscape, but it is fine
-    BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+    #BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
 
     # Don't compress images
-    SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png)$ no-gzip dont-vary
+    #SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png)$ no-gzip dont-vary
 
     # Make sure proxies don't deliver the wrong content
-    Header append Vary User-Agent env=!dont-vary
+    #Header append Vary User-Agent env=!dont-vary
 
 </IfModule>
 
@@ -144,12 +144,21 @@
     RewriteCond %{REQUEST_METHOD} ^TRAC[EK]
     RewriteRule .* - [L,R=405]
 
-##########################################
-BrowserMatchNoCase MJ12bot bad_bot
-Order allow,deny
-allow from all
-deny from env=bad_bot
-deny from 188.120.234.0/23
+<IfModule mod_setenvif.c>
+    <IfModule mod_headers.c>
+
+        ############################################
+        # X-Content-Type-Options: nosniff disable content-type sniffing on some browsers.
+        Header set X-Content-Type-Options: nosniff
+
+        ############################################
+        # This header forces to enables the Cross-site scripting (XSS) filter in browsers (if disabled)
+        BrowserMatch \bMSIE\s8 ie8
+        Header set X-XSS-Protection: "1; mode=block" env=!ie8
+
+    </IfModule>
+</IfModule>
+
 ############################################
 ## redirect for mobile user agents
 
@@ -176,6 +185,7 @@ deny from 188.120.234.0/23
 
 </IfModule>
 
+
 ############################################
 ## Prevent character encoding issues from server overrides
 ## If you still have problems, use the second line instead
@@ -189,7 +199,6 @@ deny from 188.120.234.0/23
 ## Add default Expires header
 ## http://developer.yahoo.com/performance/rules.html#expires
 
-    ExpiresActive On
     ExpiresDefault "access plus 1 year"
 
 </IfModule>
@@ -212,4 +221,29 @@ deny from 188.120.234.0/23
 ## If running in cluster environment, uncomment this
 ## http://developer.yahoo.com/performance/rules.html#etags
 
-    FileETag none
+    #FileETag none
+
+###########################################
+## Deny access to cron.php
+    <Files cron.php>
+
+############################################
+## uncomment next lines to enable cron access with base HTTP authorization
+## http://httpd.apache.org/docs/2.2/howto/auth.html
+##
+## Warning: .htpasswd file should be placed somewhere not accessible from the web.
+## This is so that folks cannot download the password file.
+## For example, if your documents are served out of /usr/local/apache/htdocs
+## you might want to put the password file(s) in /usr/local/apache/.
+
+        #AuthName "Cron auth"
+        #AuthUserFile ../.htpasswd
+        #AuthType basic
+        #Require valid-user
+
+############################################
+
+        Order allow,deny
+        Deny from all
+
+    </Files>

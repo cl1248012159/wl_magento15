@@ -10,17 +10,17 @@
  * http://opensource.org/licenses/afl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    design
  * @package     default_default
- * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 ?>
@@ -122,8 +122,8 @@ function exportUrlField()
 
 function changeEntityType()
 {
-    //toggleSelectOption('remove', 'profile_entity_type', 'profile_direction', 'customer', 'import', '<?php echo $this->__('Import') ?>');
-    //toggleSelectOption('remove', 'profile_entity_type', 'profile_store_id', 'customer', '0', '<?php echo $this->__('Default Values') ?>');
+    //toggleSelectOption('remove', 'profile_entity_type', 'profile_direction', 'customer', 'import', '<?php echo Mage::helper('core')->jsQuoteEscape($this->__('Import')) ?>');
+    //toggleSelectOption('remove', 'profile_entity_type', 'profile_store_id', 'customer', '0', '<?php echo Mage::helper('core')->jsQuoteEscape($this->__('Default Values')) ?>');
     //showOption('profile_direction');
     changeDirection();
 }
@@ -131,7 +131,7 @@ function changeEntityType()
 
 function changeDirection()
 {
-    toggleSelectOption('remove', 'profile_direction', 'profile_data_transfer', 'export', 'interactive', '<?php echo $this->__('Interactive') ?>');
+    toggleSelectOption('remove', 'profile_direction', 'profile_data_transfer', 'export', 'interactive', '<?php echo Mage::helper('core')->jsQuoteEscape($this->__('Interactive')) ?>');
     //showOption('profile_data_transfer');
     if ($('profile_direction').value == 'import') {
         profileImportOnly.each(function(id){if ($(id))$(id).up(1).show();});
@@ -199,7 +199,7 @@ Event.observe(window, 'load', function(){
                                 <?php if ($_group->getId() != $_store->getGroupId()) continue; ?>
                                 <?php if (!$_websiteShow): ?>
                                     <?php $_websiteShow=true; ?>
-                                    <optgroup label="<?php echo $_website->getName() ?>"></optgroup>
+                                    <optgroup label="<?php echo Mage::helper('core')->quoteEscape($_website->getName()) ?>"></optgroup>
                                 <?php endif; ?>
                                 <?php if (!$_groupShow): ?>
                                     <?php $_groupShow=true; ?>
@@ -278,7 +278,7 @@ Event.observe(window, 'load', function(){
                 <span class="with-tip">
                     <input class="input-text" id="file_path" name="gui_data[file][path]" value="<?php echo $this->getValue('gui_data/file/path') ?>"/>
                     <small class="file_type_file">
-                        <?php echo $this->__('(Absolute path or Relative to Magento install root, ex. var/export)') ?>
+                        <?php echo $this->__('(For Type "Local Server" need to use relative path to Magento install var/export or var/import, e.g. var/export, var/import, var/export/some/dir, var/import/some/dir)') ?>
                     </small>
                 </span>
             </span>
@@ -293,7 +293,14 @@ Event.observe(window, 'load', function(){
                 </span>
                 <span class="field-row">
                     <label for="file_password"><?php echo $this->__("Password") ?></label>
-                    <input class="input-text" id="io_password" name="gui_data[file][password]" value="<?php echo $this->getValue('gui_data/file/password') ?>"/>
+                    <input class="input-text" type="password" id="io_password" name="gui_data[file][password]" value="<?php echo $this->getValue('gui_data/file/password') ?>"/>
+                </span>
+                <span class="field-row">
+                    <label for="file_mode"><?php echo $this->__("File mode") ?></label>
+                    <select id="file_mode" name="gui_data[file][file_mode]" onchange="showOption(this)" class="option-control">
+                        <option value="<?php echo FTP_BINARY ?>" <?php echo $this->getSelected('gui_data/file/file_mode', FTP_BINARY) ?>><?php echo $this->__('BINARY') ?></option>
+                        <option value="<?php echo FTP_ASCII ?>" <?php echo $this->getSelected('gui_data/file/file_mode', FTP_ASCII) ?>><?php echo $this->__('ASCII') ?></option>
+                    </select>
                 </span>
                 <span class="field-row">
                     <label for="file_passive"><?php echo $this->__("Passive mode") ?></label>
@@ -521,10 +528,10 @@ Event.observe(window, 'load', function(){
                 <span class="field-row">
                     <label for="customer_filter_created_at_from"><?php echo $this->__("Customer Since:") ?></label>
                     <input class="input-text" style="width:5em" id="customer_filter_created_at_from" name="gui_data[customer][filter][created_at][from]" value="<?php echo $this->getValue('gui_data/customer/filter/created_at/from') ?>"/>
-                    <img src="<?php echo $this->getSkinUrl('images/grid-cal.gif') ?>" alt="" class="v-middle" id="customer_filter_created_at_from_trig" title="<?php echo $this->__('Date selector') ?>" />
+                    <img src="<?php echo $this->getSkinUrl('images/grid-cal.gif') ?>" alt="" class="v-middle" id="customer_filter_created_at_from_trig" title="<?php echo Mage::helper('core')->quoteEscape($this->__('Date selector')) ?>" />
                      <?php echo $this->__('to') ?>
                     <input class="input-text" style="width:5em" id="customer_filter_created_at_to" name="gui_data[customer][filter][created_at][to]" value="<?php echo $this->getValue('gui_data/customer/filter/created_at/to') ?>"/>
-                    <img src="<?php echo $this->getSkinUrl('images/grid-cal.gif') ?>" alt="" class="v-middle" id="customer_filter_created_at_to_trig" title="<?php echo $this->__('Date selector') ?>" />
+                    <img src="<?php echo $this->getSkinUrl('images/grid-cal.gif') ?>" alt="" class="v-middle" id="customer_filter_created_at_to_trig" title="<?php echo Mage::helper('core')->quoteEscape($this->__('Date selector')) ?>" />
 <script type="text/javascript">
     Calendar.setup({
         inputField : "customer_filter_created_at_from",

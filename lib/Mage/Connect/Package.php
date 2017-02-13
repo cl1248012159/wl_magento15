@@ -10,18 +10,18 @@
  * http://opensource.org/licenses/osl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
+ * to license@magento.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade Magento to newer
  * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
+ * needs please refer to http://www.magento.com for more information.
  *
  * @category    Mage
  * @package     Mage_Connect
- * @copyright   Copyright (c) 2009 Irubin Consulting Inc. DBA Varien (http://www.varien.com)
- * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
@@ -258,7 +258,7 @@ END;
 
     /**
      * Creates a package archive and saves it to specified path
-     * Package is compatible with the previous version of magento Connect Manager 
+     * Package is compatible with the previous version of magento Connect Manager
      *
      * @param string $path
      * @return Mage_Connect_Package
@@ -666,12 +666,7 @@ END;
         if (!empty($entries)) {
             foreach ($entries as $entry) {
                 $filePath = substr($entry, $targetDirLen);
-                if (!empty($include) && !preg_match($include, $filePath)) {
-                    continue;
-                }
-                if (!empty($exclude) && preg_match($exclude, $filePath)) {
-                    continue;
-                }
+                // TODO: Check directory before includes/excludes
                 if (is_dir($entry)) {
                     $baseName = basename($entry);
                     if (in_array($baseName, array('.', '..', '.svn'))) {
@@ -679,7 +674,16 @@ END;
                     }
                     //for subdirectory call method recursively
                     $this->addContentDir($targetName, $filePath, $exclude, $include);
-                } elseif (is_file($entry)) {
+                    continue;
+                }
+                if (!empty($include) && !preg_match($include, $filePath)) {
+                    continue;
+                }
+                if (!empty($exclude) && preg_match($exclude, $filePath)) {
+                    continue;
+                }
+
+                if (is_file($entry)) {
                     $this->addContent($filePath, $targetName);
                 }
             }
@@ -1270,7 +1274,7 @@ END;
      */
     public function hasErrors()
     {
-    	return count($this->_validationErrors) != 0;
+        return count($this->_validationErrors) != 0;
     }
 
     /**
