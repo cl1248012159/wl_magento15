@@ -26,7 +26,7 @@
 ?>
 <?php $_item = $this->getItem()?>
 <tr>
-    <td><a href="<?php echo $this->getProductUrl() ?>" class="product-sku" title="<?php echo $this->htmlEscape($this->getProductName()) ?>"><?php echo $this->htmlEscape($this->getProductSku()) ?></a></td>
+    <td><a href="<?php echo $this->getProductUrl() ?>" class="product-sku" title="<?php echo $this->htmlEscape($this->getProductName()) ?>"><?php echo $this->htmlEscape($_item->getSku()) ?></a></td>
     <td>
         <a class="product-sku product-skn-name" href="<?php echo $this->getProductUrl() ?>"><?php echo $this->htmlEscape($this->getProductName()) ?></a>
         <?php if ($_options = $this->getOptionList()):?>
