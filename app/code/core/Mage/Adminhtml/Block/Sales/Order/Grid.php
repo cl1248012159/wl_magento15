@@ -90,6 +90,7 @@ class Mage_Adminhtml_Block_Sales_Order_Grid extends Mage_Adminhtml_Block_Widget_
 
         $this->addColumn('billing_name', array(
             'header' => Mage::helper('sales')->__('Bill to Name'),
+            'width' => '150px',
             'index' => 'billing_name',
         ));
 
