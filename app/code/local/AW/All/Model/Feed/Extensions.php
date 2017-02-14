@@ -110,7 +110,7 @@ class AW_All_Model_Feed_Extensions extends AW_All_Model_Feed_Abstract{
         $i=0;
         foreach($coll as $cd){
             $i++;
-            $cd->setValue(1)->save();
+            //$cd->setValue(1)->save();
         }
         if($i==0){
              Mage::getModel('core/config_data')

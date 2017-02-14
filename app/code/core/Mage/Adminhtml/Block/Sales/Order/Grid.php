@@ -93,10 +93,10 @@ class Mage_Adminhtml_Block_Sales_Order_Grid extends Mage_Adminhtml_Block_Widget_
             'index' => 'billing_name',
         ));
 
-        $this->addColumn('shipping_name', array(
-            'header' => Mage::helper('sales')->__('Ship to Name'),
-            'index' => 'shipping_name',
-        ));
+//        $this->addColumn('shipping_name', array(
+//            'header' => Mage::helper('sales')->__('Ship to Name'),
+//            'index' => 'shipping_name',
+//        ));
 
         $this->addColumn('base_grand_total', array(
             'header' => Mage::helper('sales')->__('G.T. (Base)'),

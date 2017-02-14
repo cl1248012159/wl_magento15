@@ -115,7 +115,7 @@ class Mage_Catalog_Helper_Data extends Mage_Core_Helper_Abstract
             }
 
             if ($this->getProduct()) {
-                $path['product'] = array('label'=>$this->getProduct()->getName());
+                $path['product'] = array('label'=>$this->getProduct()->getSku());
             }
 
             $this->_categoryPath = $path;

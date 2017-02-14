@@ -32,6 +32,11 @@
         </Mage_GoogleCheckout>
     </modules>
     <global>
+        <blocks>
+            <googlecheckout>
+                <class>Mage_Googlecheckout_Block</class>
+            </googlecheckout>
+        </blocks>
         <models>
             <googlecheckout>
                 <class>Mage_GoogleCheckout_Model</class>
