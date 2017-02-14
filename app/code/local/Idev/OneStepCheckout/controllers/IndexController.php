@@ -13,13 +13,13 @@ class Idev_OneStepCheckout_IndexController extends Mage_Core_Controller_Front_Ac
     public function indexAction() {
         $quote = $this->getOnepage()->getQuote();
         if (!$quote->hasItems() || $quote->getHasError()) {
-            $this->_redirect('checkout/cart');
+            $this->_redirect('checkout/cart', array('_secure'=>true));
             return;
         }
         if (!$quote->validateMinimumAmount()) {
             $error = Mage::getStoreConfig('sales/minimum_order/error_message');
             Mage::getSingleton('checkout/session')->addError($error);
-            $this->_redirect('checkout/cart');
+            $this->_redirect('checkout/cart', array('_secure'=>true));
             return;
         }
         $this->loadLayout();

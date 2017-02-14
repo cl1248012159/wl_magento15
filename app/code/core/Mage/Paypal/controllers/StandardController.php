@@ -100,7 +100,7 @@ class Mage_Paypal_StandardController extends Mage_Core_Controller_Front_Action
             }
             Mage::helper('paypal/checkout')->restoreQuote();
         }
-        $this->_redirect('checkout/cart');
+        $this->_redirect('checkout/cart', array('_secure'=>true));
     }
 
     /**

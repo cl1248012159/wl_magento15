@@ -189,12 +189,12 @@ class Mage_Checkout_OnepageController extends Mage_Checkout_Controller_Action
     {
         if (!Mage::helper('checkout')->canOnepageCheckout()) {
             Mage::getSingleton('checkout/session')->addError($this->__('The onepage checkout is disabled.'));
-            $this->_redirect('checkout/cart');
+            $this->_redirect('checkout/cart', array('_secure'=>true));
             return;
         }
         $quote = $this->getOnepage()->getQuote();
         if (!$quote->hasItems() || $quote->getHasError()) {
-            $this->_redirect('checkout/cart');
+            $this->_redirect('checkout/cart', array('_secure'=>true));
             return;
         }
         if (!$quote->validateMinimumAmount()) {
@@ -203,7 +203,7 @@ class Mage_Checkout_OnepageController extends Mage_Checkout_Controller_Action
                 Mage::helper('checkout')->__('Subtotal must exceed minimum order amount');
 
             Mage::getSingleton('checkout/session')->addError($error);
-            $this->_redirect('checkout/cart');
+            $this->_redirect('checkout/cart', array('_secure'=>true));
             return;
         }
         Mage::getSingleton('checkout/session')->setCartWasUpdated(false);
@@ -276,7 +276,7 @@ class Mage_Checkout_OnepageController extends Mage_Checkout_Controller_Action
     {
         $session = $this->getOnepage()->getCheckout();
         if (!$session->getLastSuccessQuoteId()) {
-            $this->_redirect('checkout/cart');
+            $this->_redirect('checkout/cart', array('_secure'=>true));
             return;
         }
 
@@ -284,7 +284,7 @@ class Mage_Checkout_OnepageController extends Mage_Checkout_Controller_Action
         $lastOrderId = $session->getLastOrderId();
         $lastRecurringProfiles = $session->getLastRecurringProfileIds();
         if (!$lastQuoteId || (!$lastOrderId && empty($lastRecurringProfiles))) {
-            $this->_redirect('checkout/cart');
+            $this->_redirect('checkout/cart', array('_secure'=>true));
             return;
         }
 
@@ -304,7 +304,7 @@ class Mage_Checkout_OnepageController extends Mage_Checkout_Controller_Action
         $lastOrderId = $this->getOnepage()->getCheckout()->getLastOrderId();
 
         if (!$lastQuoteId || !$lastOrderId) {
-            $this->_redirect('checkout/cart');
+            $this->_redirect('checkout/cart', array('_secure'=>true));
             return;
         }
 

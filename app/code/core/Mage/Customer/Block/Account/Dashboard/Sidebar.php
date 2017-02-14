@@ -47,7 +47,7 @@ class Mage_Customer_Block_Account_Dashboard_Sidebar extends Mage_Core_Block_Temp
 
     public function getShoppingCartUrl()
     {
-        return Mage::getUrl('checkout/cart');
+        return Mage::getUrl('checkout/cart', array('_secure'=>true));
     }
 
     public function getCartItemsCount()

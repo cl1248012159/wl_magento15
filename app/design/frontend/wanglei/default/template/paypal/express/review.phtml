@@ -112,7 +112,7 @@
 </div>
 
 <div class="info-set">
-    <h2 class="legend"><?php echo $this->__('Items in Your Shopping Cart') ?><span class="separator"> | </span><a href="<?php echo $this->getUrl('checkout/cart') ?>"><?php echo $this->__('Edit Shopping Cart') ?></a></h2>
+    <h2 class="legend"><?php echo $this->__('Items in Your Shopping Cart') ?><span class="separator"> | </span><a href="<?php echo $this->getUrl('checkout/cart', array('_secure'=>true)) ?>"><?php echo $this->__('Edit Shopping Cart') ?></a></h2>
     <div id="details-reload">
         <?php echo $this->getChildHtml('details') ?>
     </div>

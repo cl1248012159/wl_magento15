@@ -95,7 +95,7 @@ class Mage_Checkout_CartController extends Mage_Core_Controller_Front_Action
             ) {
                 $this->_getSession()->setContinueShoppingUrl($this->_getRefererUrl());
             }
-            $this->_redirect('checkout/cart');
+            $this->_redirect('checkout/cart', array('_secure'=>true));
         }
         return $this;
     }
@@ -331,7 +331,7 @@ class Mage_Checkout_CartController extends Mage_Core_Controller_Front_Action
 
         if (!$quoteItem) {
             $this->_getSession()->addError($this->__('Quote item is not found.'));
-            $this->_redirect('checkout/cart');
+            $this->_redirect('checkout/cart', array('_secure'=>true));
             return;
         }
 

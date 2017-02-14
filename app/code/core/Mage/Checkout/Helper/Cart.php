@@ -117,7 +117,7 @@ class Mage_Checkout_Helper_Cart extends Mage_Core_Helper_Url
      */
     public function getCartUrl()
     {
-        return $this->_getUrl('checkout/cart');
+        return $this->_getUrl('checkout/cart', array('_secure'=>true));
     }
 
     /**

@@ -123,6 +123,6 @@ class Mage_Persistent_IndexController extends Mage_Core_Controller_Front_Action
         Mage::getSingleton('core/session')->addNotice(
             Mage::helper('persistent')->__('Shopping cart has been updated with appropriate prices')
         );
-        $this->_redirect('checkout/cart');
+        $this->_redirect('checkout/cart', array('_secure'=>true));
     }
 }

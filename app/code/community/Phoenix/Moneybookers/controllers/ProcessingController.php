@@ -65,7 +65,7 @@ class Phoenix_Moneybookers_ProcessingController extends Mage_Core_Controller_Fro
             $this->renderLayout();
         } catch (Exception $e){
             Mage::logException($e);
-            parent::_redirect('checkout/cart');
+            parent::_redirect('checkout/cart', array('_secure'=>true));
         }
     }
 
@@ -86,7 +86,7 @@ class Phoenix_Moneybookers_ProcessingController extends Mage_Core_Controller_Fro
         } catch(Exception $e) {
             Mage::logException($e);
         }
-        $this->_redirect('checkout/cart');
+        $this->_redirect('checkout/cart', array('_secure'=>true));
     }
 
     /**
@@ -111,7 +111,7 @@ class Phoenix_Moneybookers_ProcessingController extends Mage_Core_Controller_Fro
         }
 
         $session->addError($message);
-        $this->_redirect('checkout/cart');
+        $this->_redirect('checkout/cart', array('_secure'=>true));
     }
 
     /**

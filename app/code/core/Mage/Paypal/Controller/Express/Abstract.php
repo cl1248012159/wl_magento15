@@ -118,7 +118,7 @@ abstract class Mage_Paypal_Controller_Express_Abstract extends Mage_Core_Control
             Mage::logException($e);
         }
 
-        $this->_redirect('checkout/cart');
+        $this->_redirect('checkout/cart', array('_secure'=>true));
     }
 
     /**
@@ -167,7 +167,7 @@ abstract class Mage_Paypal_Controller_Express_Abstract extends Mage_Core_Control
             Mage::logException($e);
         }
 
-        $this->_redirect('checkout/cart');
+        $this->_redirect('checkout/cart', array('_secure'=>true));
     }
 
     /**
@@ -200,7 +200,7 @@ abstract class Mage_Paypal_Controller_Express_Abstract extends Mage_Core_Control
             Mage::getSingleton('checkout/session')->addError($this->__('Unable to process Express Checkout approval.'));
             Mage::logException($e);
         }
-        $this->_redirect('checkout/cart');
+        $this->_redirect('checkout/cart', array('_secure'=>true));
     }
 
     /**
@@ -231,7 +231,7 @@ abstract class Mage_Paypal_Controller_Express_Abstract extends Mage_Core_Control
             );
             Mage::logException($e);
         }
-        $this->_redirect('checkout/cart');
+        $this->_redirect('checkout/cart', array('_secure'=>true));
     }
 
     /**
@@ -430,7 +430,7 @@ abstract class Mage_Paypal_Controller_Express_Abstract extends Mage_Core_Control
     {
         $cart = Mage::getSingleton('checkout/cart');
         $cart->getCheckoutSession()->addError($errorMessage);
-        $this->_redirect('checkout/cart');
+        $this->_redirect('checkout/cart', array('_secure'=>true));
     }
 
     /**

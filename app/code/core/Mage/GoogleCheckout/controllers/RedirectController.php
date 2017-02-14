@@ -44,7 +44,7 @@ class Mage_GoogleCheckout_RedirectController extends Mage_Core_Controller_Front_
         $quote = $session->getQuote();
 
         if (!$quote->hasItems()) {
-            $this->getResponse()->setRedirect(Mage::getUrl('checkout/cart'));
+            $this->getResponse()->setRedirect(Mage::getUrl('checkout/cart', array('_secure'=>true)));
             $api->setError(true);
         }
 
@@ -99,7 +99,7 @@ class Mage_GoogleCheckout_RedirectController extends Mage_Core_Controller_Front_
         $api = $this->_getApi();
 
         if ($api->getError()) {
-            $url = Mage::getUrl('checkout/cart');
+            $url = Mage::getUrl('checkout/cart', array('_secure'=>true));
         } else {
             $url = $api->getRedirectUrl();
         }
@@ -115,7 +115,7 @@ class Mage_GoogleCheckout_RedirectController extends Mage_Core_Controller_Front_
         $api = $this->_getApi();
 
         if ($api->getError()) {
-            $this->getResponse()->setRedirect(Mage::getUrl('checkout/cart'));
+            $this->getResponse()->setRedirect(Mage::getUrl('checkout/cart', array('_secure'=>true)));
             return;
         } else {
             $url = $api->getRedirectUrl();
@@ -136,7 +136,7 @@ class Mage_GoogleCheckout_RedirectController extends Mage_Core_Controller_Front_
             $session->setGoogleCheckoutQuoteId(null);
         }
 
-        $this->_redirect('checkout/cart');
+        $this->_redirect('checkout/cart', array('_secure'=>true));
     }
 
     public function continueAction()

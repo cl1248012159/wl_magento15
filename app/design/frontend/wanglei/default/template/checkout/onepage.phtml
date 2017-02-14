@@ -55,7 +55,7 @@
         progress: '<?php echo $this->getUrl('checkout/onepage/progress') ?>',
         review: '<?php echo $this->getUrl('checkout/onepage/review') ?>',
         saveMethod: '<?php echo $this->getUrl('checkout/onepage/saveMethod') ?>',
-        failure: '<?php echo $this->getUrl('checkout/cart') ?>'}
+        failure: '<?php echo $this->getUrl('checkout/cart', array('_secure'=>true)) ?>'}
     );
 //]]>
 </script>

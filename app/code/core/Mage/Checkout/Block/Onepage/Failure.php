@@ -51,6 +51,6 @@ class Mage_Checkout_Block_Onepage_Failure extends Mage_Core_Block_Template
      */
     public function getContinueShoppingUrl()
     {
-        return Mage::getUrl('checkout/cart');
+        return Mage::getUrl('checkout/cart', array('_secure'=>true));
     }
 }
