@@ -34,7 +34,7 @@
     <global>
         <blocks>
             <googlecheckout>
-                <class>Mage_Googlecheckout_Block</class>
+                <class>Mage_GoogleCheckout_Block</class>
             </googlecheckout>
         </blocks>
         <models>
