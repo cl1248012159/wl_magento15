@@ -61,9 +61,7 @@ class AW_Productrelater_Block_List extends Mage_Catalog_Block_Product_Abstract {
      */
     protected function getCategories() {
         $categories = array();
-        if (Mage::registry("current_category")){
-            $categories[] = Mage::registry("current_category")->getId();
-        }elseif ($this->getProduct()&&$this->getProduct()->getCategoryIds()) {
+        if ($this->getProduct()&&$this->getProduct()->getCategoryIds()) {
             $categories = $this->getProduct()->getCategoryIds();
             foreach($categories as $cat){
                 $category = Mage::getModel('catalog/category')
@@ -74,6 +72,8 @@ class AW_Productrelater_Block_List extends Mage_Catalog_Block_Product_Abstract {
                     break;
                 }
             }
+        }else if (Mage::registry("current_category")){
+            $categories[] = Mage::registry("current_category")->getId();
         }
         $_categories = '';
         for($i = 0;$i<count($categories);$i++)
