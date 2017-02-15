@@ -2056,7 +2056,7 @@ button.add-btn-cart{ background:url(../bg/addcart_bg2.gif); width:135px; height:
 .need_menu li.last_need_menu a{color: #F77306;font-weight: bold;float: right; font-size:11px; line-height: 18px;text-decoration: none;margin-right: 12px;}
 
 /*amy*/
-.qty-jian{background-image:url(/skin/frontend/wanglei/default/images/amy/group-14.png)}
-.qty-add{background-image:url(/skin/frontend/wanglei/default/images/amy/group-21.png)}
+.qty-jian{background-image:url(../images/amy/group-14.png)}
+.qty-add{background-image:url(../images/amy/group-21.png)}
 .qty-os{display:inline-block;width:15px;height:15px;background-size:100%;vertical-align: middle;cursor: pointer;}
 .cartitem-qty .qty{text-align:center;}
