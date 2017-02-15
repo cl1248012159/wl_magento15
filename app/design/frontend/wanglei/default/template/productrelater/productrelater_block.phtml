@@ -19,7 +19,7 @@
 <?php $pro = $this->getProduct();?>
 <div class="box base-mini mini-related-items aw-arp-block">
     <div class="head">
-        <h4 class="relatename"><?php echo $pro->getSku().' '. $this->getBlockName() ?></h4>
+        <h4 class="relatename head-des"><?php echo $pro->getSku().' '. $this->getBlockName() ?></h4>
     </div>
     <div class="content aw-arp-content">
 	<?php if($this->getCount()>0) : ?>
@@ -39,7 +39,7 @@
 </div>
 <style type="text/css">
 .aw-arp-block{ display:inline-block;width: 730px; padding:5px 0;}
-.relatename{  color: #4F81BD;  font-size: 13pt;  font-weight: bold;  }
+.relatename{  color: #fff;  font-size: 12px;  font-weight: bold;  }
 .aw-arp-content{padding: 0 10px;}
 .aw-arp-item {float: none;  line-height: 28px;  width: auto;  text-align: left; background:url(<?php echo $this->getUrl()?>/skin/frontend/wanglei/default/images/amy/group-1.gif) no-repeat left center;    padding-left: 15px; }
 .aw-arp-item a{  color: #666666;  font-size: 12px;  text-decoration: none;  }
