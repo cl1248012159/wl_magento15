@@ -213,8 +213,4 @@ foreach ($priceIndexerTables as $table) {
         'comment'   => 'Group price',
     ));
 }
-<<<<<<< HEAD
 $installer->run('SET FOREIGN_KEY_CHECKS=1;');
-=======
-$installer->run('SET FOREIGN_KEY_CHECKS=1;');
->>>>>>> dc91a25ff410e3a68f8cd382052c3561dc884047
