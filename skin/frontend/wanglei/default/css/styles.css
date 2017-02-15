@@ -1033,6 +1033,8 @@ color: Black;line-height: 26px;
     text-decoration: underline;
 }
 .producteral{ padding:0; float:left;}
+.producteral a{text-decoration:none;}
+.producteral a:hover{text-decoration:underline;}
 .head-des{ background:#488BC0; color:#fff; line-height:30px; font-weight:bold; padding-left:15px; margin-bottom:10px;}
 .col1-layout .product-view .product-shop { float:right; width:545px; }
 .col3-layout .product-view .product-shop { float:none; width:auto; }
