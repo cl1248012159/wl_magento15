@@ -15,25 +15,21 @@
  * @license    http://ecommerce.aheadworks.com/LICENSE-M1.txt
  */
 ?>
-<br>
+<?php if($this->getCount()>0) : ?>
 <?php $pro = $this->getProduct();?>
 <div class="box base-mini mini-related-items aw-arp-block">
     <div class="head">
         <h4 class="relatename head-des"><?php echo $pro->getSku().' '. $this->getBlockName() ?></h4>
     </div>
     <div class="content aw-arp-content">
-	<?php if($this->getCount()>0) : ?>
-	<?php foreach ($this->getItems() as $item) : ?>
-        <div class="aw-arp-item">
-            <a href="<?php echo $item->getProductUrl()?>">
-                <?php echo $this->htmlEscape($item->getSku())?>
-                <?php echo $this->htmlEscape($item->getName())?>
-            </a>
-        </div>
-	<?php endforeach; ?>
-	<?php else : ?>
-	<div class="aw-arp-noitems">No related products</div>
-	<?php endif; ?>
+        <?php foreach ($this->getItems() as $item) : ?>
+            <div class="aw-arp-item">
+                <a href="<?php echo $item->getProductUrl()?>">
+                    <?php echo $this->htmlEscape($item->getSku())?>
+                    <?php echo $this->htmlEscape($item->getName())?>
+                </a>
+            </div>
+        <?php endforeach; ?>
         <div class="clear"></div>
     </div>
 </div>
@@ -45,3 +41,4 @@
 .aw-arp-item a{  color: #666666;  font-size: 12px;  text-decoration: none;  }
 .aw-arp-item a:hover {  color: #27905D;  text-decoration: underline;  }
 </style>
+<?php endif; ?>
