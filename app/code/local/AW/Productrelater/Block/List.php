@@ -61,10 +61,20 @@ class AW_Productrelater_Block_List extends Mage_Catalog_Block_Product_Abstract {
      */
     protected function getCategories() {
         $categories = array();
-        if (Mage::registry("current_category"))
+        if (Mage::registry("current_category")){
             $categories[] = Mage::registry("current_category")->getId();
-        elseif ($this->getProduct()&&$this->getProduct()->getCategoryIds())
+        }elseif ($this->getProduct()&&$this->getProduct()->getCategoryIds()) {
             $categories = $this->getProduct()->getCategoryIds();
+            foreach($categories as $cat){
+                $category = Mage::getModel('catalog/category')
+                    ->setStoreId(Mage::app()->getStore()->getId())
+                    ->load($cat);
+                if(count($category->getAllChildren(true))==1){
+                    $categories=array($cat);
+                    break;
+                }
+            }
+        }
         $_categories = '';
         for($i = 0;$i<count($categories);$i++)
             $_categories .= ($i==0?'':',').$categories[$i];
