@@ -18,7 +18,7 @@
 <br>
 <div class="box base-mini mini-related-items aw-arp-block">
     <div class="head">
-        <h4 class="relatename"><?php echo $this->getBlockName() ?></h4>
+        <h4 class="relatename"><?php echo $this->getProduct()->getSku().' '. $this->getBlockName() ?></h4>
     </div>
     <div class="content aw-arp-content">
 	<?php if($this->getCount()>0) : ?>

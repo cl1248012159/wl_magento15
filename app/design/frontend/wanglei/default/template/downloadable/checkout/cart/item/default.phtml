@@ -73,7 +73,7 @@
     </td>
     <?php endif ?>
     <?php if ($this->helper('tax')->displayCartPriceExclTax() || $this->helper('tax')->displayCartBothPrices()): ?>
-    <td class="a-right">
+    <td class="">
         <?php if (Mage::helper('weee')->typeOfDisplay($_item, array(1, 4), 'sales') && $_item->getWeeeTaxAppliedAmount()): ?>
             <div class="cart-tax-total" onclick="taxToggle('eunit-item-tax-details<?php echo $_item->getId(); ?>', this, 'cart-tax-total-expanded');">
         <?php else: ?>
@@ -157,11 +157,29 @@
         <?php endif; ?>
     </td>
     <?php endif; ?>
-    <td class="a-center">
-        <input name="cart[<?php echo $_item->getId() ?>][qty]" value="<?php echo $this->getQty() ?>" size="4" title="<?php echo $this->__('Qty') ?>" class="input-text qty" maxlength="12" />
+    <td class="a-center cartitem-qty">
+        <script type="text/javascript">
+            function addQty(){
+                document.getElementById('item-qty').value=document.getElementById('item-qty').value*1+1;
+                document.checkoutCartUpdatePost.submit();
+            }
+            function jianQty(){
+                if(document.getElementById('item-qty').value<1){
+                    document.getElementById('item-qty').value =1;
+                    document.checkoutCartUpdatePost.submit();
+                }else if(document.getElementById('item-qty').value==1){
+                }else{
+                    document.getElementById('item-qty').value = document.getElementById('item-qty').value*1-1;
+                    document.checkoutCartUpdatePost.submit();
+                }
+            }
+        </script>
+        <span class="qty-os qty-jian" onclick="jianQty()"></span>
+        <input name="cart[<?php echo $_item->getId() ?>][qty]" value="<?php echo $this->getQty() ?>" size="4" title="<?php echo $this->__('Qty') ?>" class="input-text qty" id="item-qty" maxlength="12" />
+        <span class="qty-os qty-add" onclick="addQty()"></span>
     </td>
     <?php if ($this->helper('tax')->displayCartPriceExclTax() || $this->helper('tax')->displayCartBothPrices()): ?>
-    <td class="a-right">
+    <td class="">
         <?php if (Mage::helper('weee')->typeOfDisplay($_item, array(1, 4), 'sales') && $_item->getWeeeTaxAppliedAmount()): ?>
             <div class="cart-tax-total" onclick="taxToggle('esubtotal-item-tax-details<?php echo $_item->getId(); ?>', this, 'cart-tax-total-expanded');">
         <?php else: ?>
@@ -246,6 +264,6 @@
     </td>
     <?php endif; ?>
 	 <td class="a-center caozuo">
-        <a style="float:left; margin-left:12px;" href="<?php echo $this->getConfigureUrl() ?>" title="<?php echo $this->__('Edit item parameters') ?>"><?php echo $this->__('Edit') ?></a>
-    <a style="float:right; margin-right:12px;"  href="<?php echo $this->getDeleteUrl() ?>" title="<?php echo $this->__('Remove Item')?>" class="btn-remove btn-remove2"><?php echo $this->__('Remove Item') ?></a></td>
+         <!--<a style="float:left; margin-left:12px;" href="--><?php //echo $this->getConfigureUrl() ?><!--" title="--><?php //echo $this->__('Edit item parameters') ?><!--">--><?php //echo $this->__('Edit') ?><!--</a>-->
+        <a style="margin: 0 auto;"  href="<?php echo $this->getDeleteUrl() ?>" title="<?php echo $this->__('Remove Item')?>" class="btn-remove btn-remove2"><?php echo $this->__('Remove Item') ?></a></td>
 </tr>
