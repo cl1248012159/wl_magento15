@@ -47,7 +47,10 @@ class Mage_Downloadable_Block_Customer_Products_List extends Mage_Core_Block_Tem
         $this->setPurchased($purchased);
         $purchasedIds = array();
         foreach ($purchased as $_item) {
-            $purchasedIds[] = $_item->getId();
+            $order = Mage::getModel('sales/order')->load($_item->getOrderId());
+            if($order->getId()){
+                $purchasedIds[] = $_item->getId();
+            }
         }
         if (empty($purchasedIds)) {
             $purchasedIds = array(null);
