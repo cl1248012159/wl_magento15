@@ -760,7 +760,6 @@ class Mage_Customer_AccountController extends Mage_Core_Controller_Front_Action
 
                     $newPassword = $customer->generatePassword();
                     $customer->changePassword($newPassword, false);
-                    Mage::log($newPassword);
                     $customer->sendPasswordReminderEmail();
 
                     $this->_getSession()->addSuccess($this->__('A new password has been sent.'));
