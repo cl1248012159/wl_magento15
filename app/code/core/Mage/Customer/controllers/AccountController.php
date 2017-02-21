@@ -757,19 +757,26 @@ class Mage_Customer_AccountController extends Mage_Core_Controller_Front_Action
 
             if ($customer->getId()) {
                 try {
-                    $newResetPasswordLinkToken =  $this->_getHelper('customer')->generateResetPasswordLinkToken();
-                    $customer->changeResetPasswordLinkToken($newResetPasswordLinkToken);
-                    $customer->sendPasswordResetConfirmationEmail();
+
+                    $newPassword = $customer->generatePassword();
+                    $customer->changePassword($newPassword, false);
+                    Mage::log($newPassword);
+                    $customer->sendPasswordReminderEmail();
+
+                    $this->_getSession()->addSuccess($this->__('A new password has been sent.'));
+                    //$newResetPasswordLinkToken =  $this->_getHelper('customer')->generateResetPasswordLinkToken();
+                    //$customer->changeResetPasswordLinkToken($newResetPasswordLinkToken);
+                    //$customer->sendPasswordResetConfirmationEmail();
                 } catch (Exception $exception) {
                     $this->_getSession()->addError($exception->getMessage());
                     $this->_redirect('*/*/forgotpassword');
                     return;
                 }
             }
-            $this->_getSession()
-                ->addSuccess( $this->_getHelper('customer')
-                ->__('If there is an account associated with %s you will receive an email with a link to reset your password.',
-                    $this->_getHelper('customer')->escapeHtml($email)));
+//            $this->_getSession()
+//                ->addSuccess( $this->_getHelper('customer')
+//                ->__('If there is an account associated with %s you will receive an email with a link to reset your password.',
+//                    $this->_getHelper('customer')->escapeHtml($email)));
             $this->_redirect('*/*/');
             return;
         } else {
