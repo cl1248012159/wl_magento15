@@ -247,6 +247,7 @@ class Mage_Catalog_Model_Product_Url extends Varien_Object
      */
     protected function _getCategoryIdForUrl($product, $params)
     {
+        return null;
         if (isset($params['_ignore_category'])) {
             return null;
         } else {
