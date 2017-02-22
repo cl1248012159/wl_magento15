@@ -524,7 +524,6 @@ abstract class Mage_Rule_Model_Condition_Product_Abstract extends Mage_Rule_Mode
         }
 
         if ('category_ids' == $attrCode) {
-            Mage::log($object->getAvailableInCategories());
             return $this->validateAttribute($object->getAvailableInCategories());
         } elseif (! isset($this->_entityAttributeValues[$object->getId()])) {
             if (!$object->getResource()) {
