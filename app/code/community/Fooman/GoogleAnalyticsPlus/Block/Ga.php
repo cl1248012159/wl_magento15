@@ -61,8 +61,8 @@ class  Fooman_GoogleAnalyticsPlus_Block_Ga extends Mage_GoogleAnalytics_Block_Ga
         else {
             $success = false;
         }
-        
-        if (version_compare(Mage::getVersion(), '1.4.1.1')  > 0 && version_compare(Mage::getVersion(), '1.7.0.0')  < 0) {
+
+        if (version_compare(Mage::getVersion(), '1.4.1.1')  > 0) {
             //Mage 1.4.2 +
             $new = true;
             if (!Mage::helper('googleanalytics')->isGoogleAnalyticsAvailable()) {
@@ -78,7 +78,7 @@ class  Fooman_GoogleAnalyticsPlus_Block_Ga extends Mage_GoogleAnalytics_Block_Ga
             $accountId = $this->getAccount();
         }
         $accountId2 = Mage::helper('googleanalyticsplus')->getGoogleanalyticsplusStoreConfig('accountnumber2');
-        
+
         $html = '
 <!-- BEGIN GOOGLE ANALYTICS CODE -->
 <script type="text/javascript">
