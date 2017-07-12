@@ -56,8 +56,10 @@ class Mage_Downloadable_DownloadController extends Mage_Core_Controller_Front_Ac
 
     protected function _processDownload($resource, $resourceType)
     {
+        Mage::log($resource,null,'amy.log');
         $http_type = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) ? 'https://' : 'http://';
         $resource = str_replace('http://',$http_type,$resource);
+        Mage::log($resource,null,'amy.log');
         $helper = Mage::helper('downloadable/download');
         /* @var $helper Mage_Downloadable_Helper_Download */
 
@@ -203,10 +205,7 @@ class Mage_Downloadable_DownloadController extends Mage_Core_Controller_Front_Ac
                 $resourceType = Mage_Downloadable_Helper_Download::LINK_TYPE_FILE;
             }
             try {
-                Mage::log($resource,null,'amy.log');
-
                 $this->_processDownload($resource, $resourceType);
-
                 $linkPurchasedItem->setNumberOfDownloadsUsed($linkPurchasedItem->getNumberOfDownloadsUsed() + 1);
 
                 if ($linkPurchasedItem->getNumberOfDownloadsBought() != 0 && !($downloadsLeft - 1)) {
