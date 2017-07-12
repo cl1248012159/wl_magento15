@@ -8,11 +8,6 @@ RewriteRule (.*) - [F,L]
 #RewriteCond %{THE_REQUEST} GET\ //customer/account/login
 #RewriteRule ^(.*)$ - [F]
 
-RewriteCond %{HTTP:X-Forwarded-Proto} !=https
-RewriteCond %{HTTPS} !=on
-RewriteCond %{REQUEST_METHOD} !=POST
-RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-
 <IfModule mod_ssl.c>
     SSLOptions StdEnvVars
     SetEnv HTTPS "on"
