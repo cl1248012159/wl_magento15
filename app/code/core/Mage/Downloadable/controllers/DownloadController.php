@@ -56,10 +56,9 @@ class Mage_Downloadable_DownloadController extends Mage_Core_Controller_Front_Ac
 
     protected function _processDownload($resource, $resourceType)
     {
-        Mage::log($resource,null,'amy.log');
-        $http_type = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) ? 'https://' : 'http://';
-        $resource = str_replace('http://',$http_type,$resource);
-        Mage::log($resource,null,'amy.log');
+
+//        $http_type = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) ? 'https://' : 'http://';
+//        $resource = str_replace('http://',$http_type,$resource);
         $helper = Mage::helper('downloadable/download');
         /* @var $helper Mage_Downloadable_Helper_Download */
 
@@ -67,6 +66,13 @@ class Mage_Downloadable_DownloadController extends Mage_Core_Controller_Front_Ac
 
         $fileName       = $helper->getFilename();
         $contentType    = $helper->getContentType();
+
+        if(empty($fileName)){
+            $resource = str_replace('http://',$http_type,$resource);
+            $helper->setResource($resource, $resourceType);
+            $fileName       = $helper->getFilename();
+            $contentType    = $helper->getContentType();
+        }
 
         $this->getResponse()
             ->setHttpResponseCode(200)
