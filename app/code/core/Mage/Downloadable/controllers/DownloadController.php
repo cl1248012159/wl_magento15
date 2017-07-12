@@ -214,7 +214,7 @@ class Mage_Downloadable_DownloadController extends Mage_Core_Controller_Front_Ac
             }
             catch (Exception $e) {
                 $this->_getCustomerSession()->addError(
-                    Mage::helper('downloadable')->__('An error occurred while getting the requested content. Please contact the store owner.')
+                    Mage::helper('downloadable')->__('An error occurred while getting the requested content. Please contact the store owner1.')
                 );
             }
         } elseif ($status == Mage_Downloadable_Model_Link_Purchased_Item::LINK_STATUS_EXPIRED) {
@@ -225,7 +225,7 @@ class Mage_Downloadable_DownloadController extends Mage_Core_Controller_Front_Ac
             $this->_getCustomerSession()->addNotice(Mage::helper('downloadable')->__('The link is not available.'));
         } else {
             $this->_getCustomerSession()->addError(
-                Mage::helper('downloadable')->__('An error occurred while getting the requested content. Please contact the store owner.')
+                Mage::helper('downloadable')->__('An error occurred while getting the requested content. Please contact the store owner2.')
             );
         }
         return $this->_redirect('*/customer/products');
