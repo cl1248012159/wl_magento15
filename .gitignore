@@ -30,3 +30,4 @@ app/code/community/ET/IpSecurity/Model/Observer.php
 media/captcha/
 media/catalog/product/cache/
 downloader/connect.cfg
+tmp/
