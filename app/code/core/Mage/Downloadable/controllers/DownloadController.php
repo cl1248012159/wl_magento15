@@ -56,6 +56,8 @@ class Mage_Downloadable_DownloadController extends Mage_Core_Controller_Front_Ac
 
     protected function _processDownload($resource, $resourceType)
     {
+        $http_type = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) ? 'https://' : 'http://';
+        $resource = str_replace('http://',$http_type,$resource);
         $helper = Mage::helper('downloadable/download');
         /* @var $helper Mage_Downloadable_Helper_Download */
 
@@ -110,8 +112,7 @@ class Mage_Downloadable_DownloadController extends Mage_Core_Controller_Front_Ac
                 $resourceType = Mage_Downloadable_Helper_Download::LINK_TYPE_FILE;
             }
             try {
-                $http_type = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) ? 'https://' : 'http://';
-                $this->_processDownload(str_replace('http://',$http_type,$resource), $resourceType);
+                $this->_processDownload($resource, $resourceType);
                 exit(0);
             } catch (Mage_Core_Exception $e) {
                 $this->_getSession()->addError(Mage::helper('downloadable')->__('Sorry, there was an error getting requested content. Please contact the store owner.'));
