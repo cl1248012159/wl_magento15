@@ -65,7 +65,7 @@ class Mage_Downloadable_DownloadController extends Mage_Core_Controller_Front_Ac
         $contentType    = $helper->getContentType();
 
         if(empty($fileName)){
-            $resource = str_replace('http://',$http_type,$resource);
+            $resource = str_replace('http://',"https://",$resource);
             $helper->setResource($resource, $resourceType);
             $fileName       = $helper->getFilename();
             $contentType    = $helper->getContentType();
