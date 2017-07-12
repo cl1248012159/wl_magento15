@@ -56,20 +56,13 @@ class Mage_Downloadable_DownloadController extends Mage_Core_Controller_Front_Ac
 
     protected function _processDownload($resource, $resourceType)
     {
+        $resource = str_replace('http://demopdfs.lead2pass.com/','https://demopdfs.lead2pass.com/',$resource);
         $helper = Mage::helper('downloadable/download');
         /* @var $helper Mage_Downloadable_Helper_Download */
-
         $helper->setResource($resource, $resourceType);
 
         $fileName       = $helper->getFilename();
         $contentType    = $helper->getContentType();
-
-        if(empty($fileName)){
-            $resource = str_replace('http://',"https://",$resource);
-            $helper->setResource($resource, $resourceType);
-            $fileName       = $helper->getFilename();
-            $contentType    = $helper->getContentType();
-        }
 
         $this->getResponse()
             ->setHttpResponseCode(200)
